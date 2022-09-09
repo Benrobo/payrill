@@ -49,7 +49,7 @@ function WalletCard() {
     <div className="w-full h-[180px] py-9">
         <div className="w-full flex flex-col items-center justify-center">
             <p className="text-white-300 text-[20px] ">Total Balance</p>
-            {(currency !== "" && balance > 0) && <p className="text-white-100 text-[35px] font-extrabold font-sans  ">
+            {(currency !== "") && <p className="text-white-100 text-[35px] font-extrabold font-sans  ">
                 {formatCurrency(currency, balance)} <span className="text-white-300 font-mono ">{currency}</span>
             </p>}
         </div>

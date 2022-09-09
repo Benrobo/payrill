@@ -149,7 +149,6 @@ function VirtualCards() {
                     className="w-full px-3 flex flex-col items-start justify-start gap-5 mt-5"
                     >
                     <VirtualCard
-                        balance="12000"
                         exp={activeVc.expiration_month +  "/" + activeVc.expiration_year}
                         name={GetCardType(activeVc.card_number)}
                         number={activeVc.card_number}

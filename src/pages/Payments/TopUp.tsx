@@ -48,7 +48,7 @@ function TopUp() {
   const handleInput = (e: any, action?: string)=>{
     const value = e.target.value;
     const name = e.target.name;
-    if(action === "currency") setInputData((prev: any)=>({...prev, currency: value}))
+    if(action === "currency" && value !== "") setInputData((prev: any)=>({...prev, currency: value}))
     setInputData((prev: any)=>({...prev, [name]: value}))
   }
 
@@ -56,15 +56,11 @@ function TopUp() {
     if(inputData.currency === "") return;
     if(Object.entries(walletInfo).length === 0) return
     
-    const filterBalance = walletInfo?.accounts.length > 0 ? walletInfo.accounts.filter((data: any) => data.currency === inputData.currency)[0].amount : 0;
+    const filterBalance = walletInfo?.accounts.length > 0 ? walletInfo.accounts.filter((data: any) => data.currency === inputData.currency)[0].balance : 0;
     setBalance(+filterBalance)
     
-  }, [inputData.currency])
+  }, [inputData])
 
-  useEffect(()=>{
-    // update inputData currency on render
-    setInputData((prev: any)=>({...prev, currency: walletInfo.currency}))
-  },[])
 
   async function handleTopup(){
     // const wallet = walletInfo;
@@ -89,7 +85,7 @@ function TopUp() {
 
       notif.success(data.message)
       await sleep(1.2)
-      window.location.reload()
+      window.location.href = "/dashboard"
     }
     catch(e: any){
       notif.error(e.message)
@@ -121,10 +117,10 @@ function TopUp() {
                 :
               steps.dialog === 2 ?
                 <div className="w-full h-auto flex flex-col items-start justify-start px-6">
-                  <p className="text-white-200">Balance: <span className="font-extrabold text-blue-300">{formatCurrency(inputData.currency, balance)}</span> </p>
+                  <p className="text-white-200">Balance: {inputData.currency !== "" && <span className="font-extrabold text-blue-300">{formatCurrency(inputData.currency, balance)}</span>} </p>
                   <br />
                   {
-                    walletInfo.accounts.length > 0 ?
+                    Object.entries(walletInfo).length > 0 && walletInfo.accounts.length > 0 ?
                       <select name="" id="" onChange={(e)=>handleInput(e, "currency")} className="w-full px-4 py-3 bg-dark-100 text-white-100 rounded-[30px]">
                         <option value="">Select Account</option>
                         {
@@ -142,13 +138,10 @@ function TopUp() {
                       </select>
                   } 
                   <br />
-                  <button className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] " onClick={()=>toggleStep(3)}>
-                    Continue
+                  <button className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] " onClick={handleTopup}>
+                    Proceed
                   </button>
                 </div>
-                :
-              steps.dialog === 3 ?
-                <Keyboard active={kbactive} toggleKeyboard={closeKeyboard} handler={handleTopup} title="Account Topup"  subTitle={`${inputData.currency} += ${inputData.amount} `} />
                 :
                 ""
             }
