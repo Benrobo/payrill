@@ -72,7 +72,6 @@ function Dashboard() {
   useEffect(()=>{
     if(virtualCardId === "") return;
     getVirtualCardInfo(virtualCardId)
-    console.log(virtualCardId)
   },[virtualCardId])
 
   function handleActiveState(name: string, state?: boolean, vcId?: any) {
