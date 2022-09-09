@@ -6,7 +6,7 @@ interface VirtualCardProp {
     number: string;
     exp: string;
     name: string;
-    balance: string;
+    balance?: string;
 }
 
 function VirtualCard({type, number, exp, name, balance} : VirtualCardProp) {
@@ -33,9 +33,12 @@ function VirtualCard({type, number, exp, name, balance} : VirtualCardProp) {
                 <span className="absolute text-[25px] top-0 font-sans right-5 text-white-100 font-extrabold capitalize ">
                     {name}
                 </span>
+                <br />
                 <p className="text-white-100 font-extrabold font-mono space-x-2 text-[25px] ">{formatCardNUm(number)}</p>
                 <br />
-                <p className="text-white-100 font-extrabold space-x-2 text-[30px] ">{formatCurrency("USD", +balance)}</p>
+              { 
+                    (typeof balance !== "undefined" && balance !== "" ) && <p className="text-white-100 font-extrabold space-x-2 text-[30px] ">{formatCurrency("USD", +balance)}</p>  
+                }
                 <span className="absolute bottom-2 right-6 text-white-100 font-extrabold">{exp}</span>
             </div>
         </div>

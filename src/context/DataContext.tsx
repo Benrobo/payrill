@@ -111,6 +111,7 @@ export function DataContextProvider({ children }: any) {
             setWalletInfo(data.data);
           } catch (e: any) {
             setLoader((prev: any)=>({...prev, wallet: false}))
+            setError((prev: any)=>({...prev, wallet: `An Error Occured:  ${e.message}`}))
             console.log("Error fetching wallet: "+ e.message)
           }
     }

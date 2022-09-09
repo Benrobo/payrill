@@ -25,6 +25,8 @@ import DataContext from "../../context/DataContext";
 import APIROUTES from "../../apiRoutes";
 import Fetch from "../../utils/fetch";
 import Notification from "../../utils/toast";
+import { ErrorScreen } from "../../components/UI-COMP/error";
+import { GetCardType } from "../../utils/creditCard";
 
 interface ActiveState {
   viewTransaction: boolean;
@@ -51,22 +53,29 @@ interface handleActiveStateParams {
 const notif = new Notification(10000)
 
 function Dashboard() {
-  const {Data, Loader, getVirtualCards, Error, setData, setLoader, setError} = useContext<any>(DataContext)
+  const {Data, Loader, getVirtualCards, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [activeState, setActiveState] = useState<ActiveState>({
     viewTransaction: false,
     moreOptions: false,
     virtualCard: false,
     switchCard: false,
   });
-  const [activeStateData, setActiveStateData] = useState<any>({
-    cardId: "",
-  });
+  const [virtualCardId, setVirtualCardId] = useState<string>("");
+  const [selectedVcInfo, setSelectedVcInfo] = useState<any>({})
 
   useEffect(()=>{
+    if(activeState.switchCard){
+      getVirtualCards()
+    }
+  },[activeState])
 
-  },[])
+  useEffect(()=>{
+    if(virtualCardId === "") return;
+    getVirtualCardInfo(virtualCardId)
+    console.log(virtualCardId)
+  },[virtualCardId])
 
-  function handleActiveState(name: string, state?: boolean) {
+  function handleActiveState(name: string, state?: boolean, vcId?: any) {
     if (name === "viewTransaction") {
       setActiveState((prev) => ({
         ...prev,
@@ -80,8 +89,11 @@ function Dashboard() {
       }));
     }
     if (name === "virtualCard") {
-      if (typeof state !== "undefined")
-        setActiveState((prev) => ({ ...prev, ["virtualCard"]: state }));
+      if (typeof state !== "undefined"){
+        setVirtualCardId(vcId);
+        setActiveState((prev: any) => ({ ...prev, ["virtualCard"]: state }));
+      }
+      
     }
     if (name === "switchCard") {
       setActiveState((prev) => ({
@@ -89,6 +101,22 @@ function Dashboard() {
         ["switchCard"]: !activeState.switchCard,
       }));
     }
+  }
+
+  function getVirtualCardInfo(cardId: string){
+    if(cardId === "cardid") return;
+    const cards = Data.cards;
+    const filteredCard = cards.filter((card: any) => card.card_id === cardId || virtualCardId)[0];
+    setSelectedVcInfo(filteredCard)
+  }
+
+  // check if an error occured during fetching of wallet info
+  if(Loader.wallet){
+    return <LoaderScreen full={true} text="Loading...." />
+  }
+
+  if(!Loader.wallet && Error.wallet !== null){
+    return <ErrorScreen full={true} size="md" text={Error.wallet} />
   }
 
   return (
@@ -99,19 +127,23 @@ function Dashboard() {
         <div className="w-full flex flex-row items-center justify-end mb-2 px-3">
           <button
             className="px-4 py-2 flex flex-row items-center justify-around rounded-[30px] bg-dark-200 text-[15px "
-            onClick={() => handleActiveState("switchCard", true)}
+            onClick={() => handleActiveState("switchCard", true, null)}
           >
             Switch Card <IoMdArrowDropdown className="text-[25px] " />
           </button>
         </div>
         {activeState.virtualCard ? (
-          <VirtualCard
-            balance="500"
-            exp="07/22"
-            name="John Doe"
-            number="378282246310005"
-            type="mastercard"
-          />
+          <>
+          {
+            Object.entries(selectedVcInfo).length > 0 &&
+            <VirtualCard
+              exp={selectedVcInfo?.expiration_month + "/" + selectedVcInfo?.expiration_year}
+              name={GetCardType(selectedVcInfo?.card_number)}
+              number={selectedVcInfo?.card_number}
+              type={GetCardType(selectedVcInfo?.card_number)}
+            />
+          }
+          </>
         ) : (
           <WalletCard />
         )}
@@ -191,22 +223,17 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
   
   const {Data, Loader, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [activetarget, setActiveTarget] = useState<any>({
-    name: "walletCard",
+    name: "",
     cardId: null,
   });
 
   useEffect(() => {
-    // set the default card type
-    let parent = document.querySelector("#walletCard");
-    parent?.querySelector("input")?.click();
+    
   }, []);
 
   const handleActiveTarget = (e: any) => {
     const dataset = e.target.dataset;
-    const parent = e.target;
     if (Object.entries(dataset).length > 0) {
-      const input = parent.querySelector("input");
-      input.click();
       const { id, name } = dataset;
       setActiveTarget({ name, cardId: id });
     }
@@ -214,15 +241,15 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
 
   const continueSwitch = () => {
     if (activetarget.name === "virtualCard") {
-      handleActiveState("virtualCard", true);
+      handleActiveState("virtualCard", true,activetarget.cardId);
       handleActiveState("switchCard", false);
       return;
     }
-    handleActiveState("virtualCard", false);
-    handleActiveState("switchCard", false);
-    // handleActiveState("walletCard")
+    if(activetarget.name === "walletCard"){
+      handleActiveState("virtualCard", false, activetarget.cardId);
+      handleActiveState("switchCard", false);
+    }
   };
-
   return (
     <Modal isActive={isActive}>
       <div className="w-[350px] bg-dark-200 rounded-md p-3 ">
@@ -246,12 +273,11 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
         >
           <div
             id="card"
-            className={`w-full rounded-md bg-dark-100 flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer`}
+            className={`w-full rounded-md flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer border-[3px] ${activetarget.name === "walletCard" ? "border-blue-300 bg-blue-300 " : "border-transparent bg-dark-100 "} border-solid hover:bg-blue-300 `}
             data-id={"cardid"}
             data-name="walletCard"
             onClick={handleActiveTarget}
           >
-            <input type="radio" id="walletCard" name="vc" />{" "}
             <p className="text-white-100 text-[15px] ">E-Wallet</p>
           </div>
         </div>
@@ -277,14 +303,15 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
               Data.cards.map((data: any)=>(
                 <div
                   id="card"
-                  className={`w-full rounded-md bg-dark-100 flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer mt-1`}
+                  className={`w-full rounded-md flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer mt-1 border-[3px] ${activetarget.name === "virtualCard" ? "border-blue-300 bg-blue-300" : "border-transparent bg-dark-100 "} border-solid hover:bg-blue-300`}
                   onClick={handleActiveTarget}
                   data-name="virtualCard"
                   data-id={data.card_id}
                   data-type="virtual_card"
                 >
-                  <input type="radio" id="virtualCard" name="vc" />
-                  <p className="text-white-100 text-[15px] capitalize ">{data.type || data.card_number}</p>
+                  <p className="text-white-100 text-[15px] capitalize ">
+                    {GetCardType(data.card_number)}
+                  </p>
                 </div>
               ))
               :
@@ -296,8 +323,9 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
         <br />
         <div className="w-full flex flex-row items-center justify-between">
           <button
-            className={`w-full rounded-md px-4 py-3 flex flex-row items-center justify-center bg-blue-300 text-white-100`}
+            className={`w-full rounded-md px-4 py-3 flex flex-row items-center justify-center bg-blue-300 text-white-100 ${Loader.getCards ? "opacity-[.7]" : "opacity-1"} `}
             onClick={continueSwitch}
+            disabled={Loader.getCards}
           >
             Continue
           </button>
