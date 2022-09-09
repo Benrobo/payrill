@@ -1,0 +1,22 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "fullName": "john doe",
+            "username": "john",
+            "img": "csdcdsscdssdcdsc"
+        },
+        {
+            "id": "2",
+            "fullName": "Elon Musk",
+            "username": "elon",
+            "img": "csdcdsscdssdcdsc"
+        },
+        {
+            "id": "3",
+            "fullName": "john alex",
+            "username": "jalex",
+            "img": "csdcdsscdssdcdsc"
+        }
+    ]
+}

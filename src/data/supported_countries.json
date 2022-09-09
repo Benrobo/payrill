@@ -1,0 +1,47 @@
+{
+    "supported_countries": [
+      {
+        "country": "GB",
+        "currencies": ["GBP"]
+      },
+      {
+        "country": "DE",
+        "currencies": ["EUR"]
+      },
+      {
+        "country": "DK",
+        "currencies": [
+          "AED",
+          "AUD",
+          "CAD",
+          "CHF",
+          "CZK",
+          "DKK",
+          "HKD",
+          "HRK",
+          "HUF",
+          "ILS",
+          "JPY",
+          "MXN",
+          "NOK",
+          "NZD",
+          "PLN",
+          "RON",
+          "SAR",
+          "SEK",
+          "SGD",
+          "TRY",
+          "USD",
+          "ZAR"
+        ]
+      },
+      {
+        "country": "MX",
+        "currencies": ["MXN"]
+      },
+      {
+        "country": "SG",
+        "currencies": ["SGD"]
+      }
+    ]
+  }

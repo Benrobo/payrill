@@ -1,0 +1,34 @@
+{
+    "coins":[
+        {
+            "id": "BTC",
+            "name": "Bitcoin",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/icon/btc.png"
+        },
+        {
+            "id": "ETC",
+            "name": "Ethereum",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/icon/eth.png"
+        },
+        {
+            "id": "BNB",
+            "name": "Binance Coin",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/color/bnb.png"
+        },
+        {
+            "id": "BCH",
+            "name": "Bitcoin Cash",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/color/bch.png"
+        },
+        {
+            "id": "DOGE",
+            "name": "DOGE COIN",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/color/doge.png"
+        },
+        {
+            "id": "FLDC",
+            "name": "Folding Coin",
+            "img": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/128/color/fldc.png"
+        }
+    ]
+}
