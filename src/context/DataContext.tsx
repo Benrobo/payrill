@@ -29,7 +29,8 @@ export function DataContextProvider({ children }: any) {
         wallet: [],
         transactions: [],
         cards: [],
-        products: []
+        products: [],
+        stores: []
     })
     const [Loader, setLoader] = useState<any>({
         wallet:false,
@@ -41,6 +42,8 @@ export function DataContextProvider({ children }: any) {
         createCards: false,
         changeCardStatus: false,
         topUp: false,
+        createStore:false,
+        getStore:false
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -50,7 +53,9 @@ export function DataContextProvider({ children }: any) {
         withdraw: null,
         getCards: null,
         createCard: null,
-        changeCardStatus: null
+        changeCardStatus: null,
+        createStore:null,
+        getStore:null
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({
