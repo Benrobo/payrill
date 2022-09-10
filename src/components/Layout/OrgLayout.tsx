@@ -16,7 +16,7 @@ function OrgLayout({ sideBarActiveName, children }: OrgLayoutProps) {
     <div className="w-screen h-screen flex flex-col items-center justify-center overflow-hidden " >
       <DomHead />
       <div id="device-container" className={`relative w-full h-screen flex items-start justify-start overflow-y-scroll`}>
-        <Sidebar activeName={sideBarActiveName}  />
+        <Sidebar activeName={sideBarActiveName} />
         <div className={` w-full h-screen overflow-y-hidden text-white-100`}>
           {children}
           <div className="w-full h-[200px] "></div>

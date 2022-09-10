@@ -30,7 +30,8 @@ export function DataContextProvider({ children }: any) {
         transactions: [],
         cards: [],
         products: [],
-        stores: []
+        stores: [],
+        orgStoreInfo: {}
     })
     const [Loader, setLoader] = useState<any>({
         wallet:false,
@@ -43,7 +44,8 @@ export function DataContextProvider({ children }: any) {
         changeCardStatus: false,
         topUp: false,
         createStore:false,
-        getStore:false
+        getStore:false,
+        getOrgStoreInfo: false
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -55,7 +57,8 @@ export function DataContextProvider({ children }: any) {
         createCard: null,
         changeCardStatus: null,
         createStore:null,
-        getStore:null
+        getStore:null,
+        getOrgStoreInfo: null
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({
@@ -114,6 +117,7 @@ export function DataContextProvider({ children }: any) {
             }
 
             setWalletInfo(data.data);
+            localStorage.setItem("payrill_user_currency", JSON.stringify(data.data?.currency))
           } catch (e: any) {
             setLoader((prev: any)=>({...prev, wallet: false}))
             setError((prev: any)=>({...prev, wallet: `An Error Occured:  ${e.message}`}))
@@ -147,6 +151,33 @@ export function DataContextProvider({ children }: any) {
         }
     }
 
+    // get main store info
+    async function getOrgStoreInfo(storeName: string){
+        try {
+            
+            setLoader((prev: any)=>({...prev, getOrgStoreInfo: true}))
+            const url = APIROUTES.getStoreBySubDomain1.replace(":subdomain", storeName);
+            const {res, data} = await Fetch(url, {
+                method: "GET"
+            });
+            setLoader((prev: any)=>({...prev, getOrgStoreInfo: false}))
+
+            if(!data.success){
+                setError((prev: any)=>({...prev, getOrgStoreInfo: data.message}))
+                return
+            }
+
+
+            setData((prev: any)=>({...prev,orgStoreInfo: data.data }))
+            setError((prev: any)=>({...prev, getOrgStoreInfo: null}))
+            localStorage.setItem("payrill_store_name", JSON.stringify(data.data?.name))
+        } catch (e: any) {
+            setLoader((prev: any)=>({...prev, getOrgStoreInfo: false}))
+            setError((prev: any)=>({...prev, getOrgStoreInfo: `Something went wrong. Try again`}))
+            return
+        }
+    }
+
     const ProviderParams  = {
         logout ,
         pin,
@@ -164,7 +195,8 @@ export function DataContextProvider({ children }: any) {
         setPin,
         clearPin,
         setData,
-        getVirtualCards
+        getVirtualCards,
+        getOrgStoreInfo
     }
 
     return (

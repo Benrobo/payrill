@@ -27,7 +27,7 @@ export function LoaderScreenComp({color, size, full, text}: LoaderProps){
     
     return (
         <div className={`w-full ${full ? "h-screen": "h-auto"} flex flex-col items-center justify-center `}>
-            <span className="text-white-100 text-[13px] pb-5 ">{text || "Error"}</span>
+            <span className="text-white-100 text-[13px] pb-5 ">{text}</span>
             <Spinner color={color} size={size} />
         </div>
     )
