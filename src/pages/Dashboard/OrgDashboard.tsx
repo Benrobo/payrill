@@ -27,15 +27,17 @@ function OrgDashboard() {
     getOrgStoreInfo(storeName)
 
     // set default currency
-    setCurrency(userCurrency)
+    // setCurrency(userCurrency)
   },[])
 
 
 
   useEffect(()=>{
-    if(currency === "") return;
-    getWalletBalance(currency)
-  },[currency, balance])
+    // console.log({currency})
+    // if(currency === "") return;
+    console.log("Currency ", currency)
+    getWalletBalance(currency || userCurrency)
+  },[currency])
 
 
   function getWalletBalance(currency: string){
@@ -83,7 +85,7 @@ function OrgDashboard() {
         <br />
         <br />
         <div className="w-full flex items-center justify-start gap-5">
-            <div className="w-[300px] h-auto p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between relative ">
+            <div className="w-[300px] h-[150px] p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between relative ">
                 <div className="w-auto flex items-start justify-start gap-3">
                     {
                         Loader.wallet ?
@@ -113,13 +115,15 @@ function OrgDashboard() {
                 </div>
                 <br />
                 <div className="w-auto flex flex-col items-start justify-start">
-                {(currency !== "") && <p className="text-white-100 text-[25px] font-extrabold font-sans  ">
+                {(currency !== "") ? <p className="text-white-100 text-[25px] font-extrabold font-sans  ">
                     {formatCurrency(currency, balance)}
+                </p> : <p className="text-white-100 text-[25px] font-extrabold font-sans  ">
+                    0.000
                 </p>}
                 </div>
             </div>
 
-            <div className="w-[300px] h-auto p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between ">
+            <div className="w-[300px] h-[150px] p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between ">
                 <div className="w-auto flex items-start justify-start gap-3">
                     <MdProductionQuantityLimits className=" p-1 rounded-md bg-blue-900 text-blue-200 text-[50px] " />
                     <div className="w-auto">
@@ -132,7 +136,7 @@ function OrgDashboard() {
                 </div>
             </div>
 
-            <div className="w-[300px] h-auto p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between ">
+            <div className="w-[300px] h-[150px] p-5 rounded-md bg-dark-200 flex items-start flex-col justify-between ">
                 <div className="w-auto flex items-start justify-start gap-3">
                     <MdProductionQuantityLimits className=" p-1 rounded-md bg-blue-900 text-blue-200 text-[50px] " />
                     <div className="w-auto">
