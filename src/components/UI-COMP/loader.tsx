@@ -9,7 +9,7 @@ interface LoaderProps{
     text?: string;
 }
 
-export function LoaderScreen({size, color, text}: LoaderProps){
+export function LoaderScreen({size, color, full, text}: LoaderProps){
 
     const Size = typeof size === "undefined" ? " w-[30px] h-[30px] " : ` w[${size}px] h-[${size}px] `
 
@@ -17,7 +17,7 @@ export function LoaderScreen({size, color, text}: LoaderProps){
 
     return (
         <Modal isActive={true}>
-            <div id="payrill-spinner" className={`w-auto rounded-[50%] ${Size} border-[3px] ${Color}  `}></div>
+            <div id="payrill-spinner" className={`${full ? "w-full h-screen" : "w-auto"} rounded-[50%] ${Size} border-[3px] ${Color} z-[100] `}></div>
             <span className="text-white-100 text-[13px] py-5 ">{text}</span>
         </Modal>
     )
@@ -26,7 +26,7 @@ export function LoaderScreen({size, color, text}: LoaderProps){
 export function LoaderScreenComp({color, size, full, text}: LoaderProps){
     
     return (
-        <div className={`w-full ${full ? "h-screen": "h-auto"} flex flex-col items-center justify-center `}>
+        <div className={`w-full ${full ? "h-screen": "h-auto"} flex flex-col items-center justify-center z-[100] `}>
             <span className="text-white-100 text-[13px] pb-5 ">{text}</span>
             <Spinner color={color} size={size} />
         </div>
@@ -40,7 +40,7 @@ export function Spinner({size, color}: LoaderProps){
     const Color = typeof color === "undefined" ? "border-t-blue-200 border-r-transparent border-l-blue-200 border-b-transparent" : `border-[${color}] border-r-transparent border-b-transparent`
 
     return (
-        <div id="payrill-spinner" className={`rounded-[50%] ${Size} border-[3px] ${Color}  `}></div>
+        <div id="payrill-spinner" className={`rounded-[50%] ${Size} border-[3px] ${Color} z-[100] `}></div>
     )
 }
 

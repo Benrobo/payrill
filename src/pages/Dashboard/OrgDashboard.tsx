@@ -56,9 +56,9 @@ function OrgDashboard() {
     return <LoaderScreenComp text="Loading Store..." full={true} />
   }
 
-  if(Loader.wallet){
-    return <LoaderScreenComp text="Loading Store..." full={true} />
-  }
+  // if(Loader.wallet){
+  //   return <LoaderScreenComp text="Loading Store..." full={true} />
+  // }
   
   if(Error.getOrgStoreInfo !== null){
     return <ErrorScreen text={Error.getOrgStoreInfo} size={"lg"} full={true} />

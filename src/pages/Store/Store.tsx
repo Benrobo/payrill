@@ -110,14 +110,14 @@ function Store() {
                     <div className="w-full h-[100px] "></div>
                 </div>
             </div>
-            {active && <CreateStore active={active} toggleActive={toggleActive} />}
+            {active && <CreateStore active={active} getAllStores={getAllStores} toggleActive={toggleActive} />}
         </Layout>
     )
 }
 
 export default Store
 
-function CreateStore({active, toggleActive}: any){
+function CreateStore({active, toggleActive, getAllStores}: any){
     const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
     const [steps, setSteps] = useState(1)
     const [inputData, setInputData] = useState<inputDataType>({
@@ -173,9 +173,6 @@ function CreateStore({active, toggleActive}: any){
 
     async function createStore(){
         const {cover_photo, logo, description, location, name, subdomain } = inputData;
-        if(cover_photo === "") return notif.error("store cover photo cant be empty")
-        if(logo === "") return notif.error("store logo cant be empty")
-
         try {
 
             setLoader((prev: any)=>({...prev, createStore: true}))
@@ -194,7 +191,7 @@ function CreateStore({active, toggleActive}: any){
             notif.success(data.message)
             setData((prev: any)=>({...prev, stores: data.data}));
             toggleActive()
-            window.location.reload()
+            getAllStores()
           } catch (e: any) {
             setLoader((prev: any)=>({...prev, createStore: false}))
             notif.error(e.message)

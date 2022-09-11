@@ -31,6 +31,7 @@ export function DataContextProvider({ children }: any) {
         cards: [],
         products: [],
         stores: [],
+        storeItems: [],
         orgStoreInfo: {}
     })
     const [Loader, setLoader] = useState<any>({
@@ -45,7 +46,11 @@ export function DataContextProvider({ children }: any) {
         topUp: false,
         createStore:false,
         getStore:false,
-        getOrgStoreInfo: false
+        getOrgStoreInfo: false,
+        addItems: false,
+        getStoreItems: false,
+        updateStoreItems: false,
+        deleteStoreItems: false,
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -58,7 +63,11 @@ export function DataContextProvider({ children }: any) {
         changeCardStatus: null,
         createStore:null,
         getStore:null,
-        getOrgStoreInfo: null
+        getOrgStoreInfo: null,
+        addItems: null,
+        getStoreItems: null,
+        updateStoreItems: null,
+        deleteStoreItems: null,
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({
@@ -171,6 +180,7 @@ export function DataContextProvider({ children }: any) {
             setData((prev: any)=>({...prev,orgStoreInfo: data.data }))
             setError((prev: any)=>({...prev, getOrgStoreInfo: null}))
             localStorage.setItem("payrill_store_name", JSON.stringify(data.data?.name))
+            localStorage.setItem("payrill_store_id", JSON.stringify(data.data?.id))
         } catch (e: any) {
             setLoader((prev: any)=>({...prev, getOrgStoreInfo: false}))
             setError((prev: any)=>({...prev, getOrgStoreInfo: `Something went wrong. Try again`}))
