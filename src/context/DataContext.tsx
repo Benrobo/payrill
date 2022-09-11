@@ -31,6 +31,8 @@ export function DataContextProvider({ children }: any) {
         cards: [],
         products: [],
         stores: [],
+        ecarts: [],
+        ecartItems: [],
         storeItems: [],
         orgStoreInfo: {}
     })
@@ -51,6 +53,10 @@ export function DataContextProvider({ children }: any) {
         getStoreItems: false,
         updateStoreItems: false,
         deleteStoreItems: false,
+        createEcart: false,
+        addToCart: false,
+        getAllEcarts: false,
+        getAllEcartItems: false
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -68,6 +74,10 @@ export function DataContextProvider({ children }: any) {
         getStoreItems: null,
         updateStoreItems: null,
         deleteStoreItems: null,
+        createEcart: null,
+        addToCart: null,
+        getAllEcarts: null,
+        getAllEcartItems: null
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({

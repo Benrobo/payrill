@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { FaCartPlus, FaLongArrowAltLeft, FaTrashAlt } from "react-icons/fa";
 import { HiArrowSmLeft } from "react-icons/hi";
 import { QrReader } from "react-qr-reader";
@@ -11,8 +11,12 @@ import { QRCode } from "react-qrcode";
 import Keyboard from "../../components/UI-COMP/keyboard";
 import Dialog from "../../components/Dialog/Dialog";
 import Notification from "../../utils/toast";
-import { LoaderScreen } from "../../components/UI-COMP/loader";
+import { LoaderScreen, LoaderScreenComp, Spinner } from "../../components/UI-COMP/loader";
 import { sleep } from "../../utils";
+import DataContext from "../../context/DataContext";
+import APIROUTES from "../../apiRoutes";
+import Fetch from "../../utils/fetch";
+import { ErrorScreen } from "../../components/UI-COMP/error";
 
 const qrcodeconstraints = {
   facingMode: "",
@@ -22,10 +26,12 @@ const notif = new Notification(10000)
 
 
 function Scanner() {
+  const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [qrcodeId, setQrcodeId] = useState("");
   const [steps, setSteps] = useState(2);
   const [activeAlertBox, setActiveAlertBox] = useState(false);
   const [activeKeyboard, setActiveKeyboard] = useState(false);
+  const [productInfo, setProducInfo] = useState<any>({})
 
   const toggleActiveAlertBox = () => setActiveAlertBox(!activeAlertBox);
   const toggleActiveKeyboard = () => setActiveKeyboard(!activeKeyboard);
@@ -43,6 +49,36 @@ function Scanner() {
 
   function handleEcartPayment() {
     toggleActiveAlertBox();
+  }
+
+  useEffect(()=>{
+    // if(qrcodeId === "") return;
+    getItemById("365e2545-42b9-44c6-ab83-74a9c66a5462")
+  },[qrcodeId])
+
+  async function getItemById(itemId: string){
+    try {
+
+      setLoader((prev: any)=>({...prev, getStoreItems: true}))
+      const url = APIROUTES.getStoreItemById.replace(":itemId", itemId);
+
+      const {res, data} = await Fetch(url, {
+        method: "GET",
+      });
+      setLoader((prev: any)=>({...prev, getStoreItems: false}))
+
+      if(!data.success){
+        setError((prev: any)=>({...prev, getStoreItems: data.message}))
+        return
+      }
+
+      setProducInfo(data.data?.item)
+      setError((prev: any)=>({...prev, getStoreItems: null}))
+
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getStoreItems: false}))
+      setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
+    }
   }
 
   return (
@@ -64,7 +100,7 @@ function Scanner() {
             </Link>
           </div>
         ) : steps === 2 ? (
-          <ProductInfo toggleStep={toggleSteps} />
+          <ProductInfo data={productInfo} toggleStep={toggleSteps} />
         ) : steps === 3 ? (
           <CheckoutCont
             toggleStep={toggleSteps}
@@ -95,7 +131,8 @@ function Scanner() {
 
 export default Scanner;
 
-function ProductInfo({ toggleStep }: any) {
+function ProductInfo({ toggleStep, data }: any) {
+  const {Data, Loader, walletInfo, Error} = useContext<any>(DataContext)
   const [quantity, setQuantity] = useState(1);
   const [selectcart, setSelectCart] = useState(false)
   const [ecartId, setEcartId] = useState("")
@@ -106,25 +143,52 @@ function ProductInfo({ toggleStep }: any) {
     setQuantity((prev) => (prev <= 1 ? (prev = 1) : (prev -= 1)));
 
   const toggleEcart = ()=> setSelectCart(!selectcart)
+  const itemData = data;
 
+  async function handleAddToCart() {
+    if(ecartId === "") return notif.error("select an ecart to continue..")
+    try {
+      setAddToCart(true)
+
+      const url = APIROUTES.addToCart
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          cartId: ecartId,
+          itemId: itemData.id,
+          quantity: quantity
+        })
+      });
+      setAddToCart(false)
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+      // if item has been added to cart...
+      
+      notif.success(data.message)
+      toggleStep(3);
+    } catch (e: any) {
+      setAddToCart(false)
+      notif.error(`An Error Occured:  ${e.message}`)
+    }
+  }
+
+  if(Loader.getStoreItems){
+    return <LoaderScreenComp full={true}/>
+  }
+  
+  if(Error.getStoreItems !== null){
+    return <ErrorScreen full={true} text={Error.getStoreItems} />
+  }
+  
   const productStyle = {
-    backgroundImage: `url("${milkImg}")`,
+    backgroundImage: `url("${data.item_image}")`,
     backgroundSize: "contain",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
-
-  async function handleAddToCart() {
-    if(ecartId === "") return notif.error("select an ecart to continue..")
-    console.log(ecartId)
-    setAddToCart(true)
-    
-    // if item has been added to cart...
-    await sleep(2)
-    notif.success("product added to cart.")
-    setAddToCart(false)
-    toggleStep(3);
-  }
 
   return (
     <div className="w-full h-screen bg-dark-100 flex flex-col items-center justify-start">
@@ -149,7 +213,7 @@ function ProductInfo({ toggleStep }: any) {
       </div>
       <div className="w-full flex items-center justify-between px-3 py-3">
         <div className="right w-auto flex flex-col items-start justify-start">
-          <p className="text-white-200 font-extrabold ">Product Name</p>
+          <p className="text-white-200 font-extrabold capitalize ">{data.item_name}</p>
         </div>
         <div
           id="left"
@@ -175,8 +239,7 @@ function ProductInfo({ toggleStep }: any) {
       <br />
       <div className="w-full flex items-start justify-start px-3 ">
         <p className="text-white-200 text-[15px] ">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Atque,
-          pariatur!
+          {data.item_description}
         </p>
       </div>
       <br />
@@ -186,7 +249,9 @@ function ProductInfo({ toggleStep }: any) {
           className="w-auto flex flex-col items-start justify-start ml-2"
         >
           <p className="text-white-300 text-[12px] ">Price</p>
-          <p className="text-white-100 font-extrabold text-[25px] ">$200</p>
+          <p className="text-white-100 font-extrabold text-[25px] ">
+            {formatCurrency(data.item_currency, data.item_price)}
+          </p>
         </div>
         <br />
         <button
@@ -207,9 +272,10 @@ function ProductInfo({ toggleStep }: any) {
 }
 
 function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
-
+  const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [cartname, setCartName] = useState("")
   const [steps, setSteps] = useState(1)
+  const [ecartName, setEcartName] = useState("")
 
   const toggleSteps = (step: number)=> setSteps(step)
 
@@ -220,30 +286,76 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
   function handleEcartId(e: any){
     const dataset = e.target.dataset;
     const value = e.target.value;
-    if(Object.entries(dataset).length === 0) {
+    if(value === "") {
       // if user selects an empty option, then set the previous ecart value to empty. ( FOR UI SAKE...)
+      setCartName(value)
       return setEcartId(value)
     };
-    const {id} = dataset;
-    setEcartId(id)
+    const filter = Data.ecarts.filter((cart: any)=> cart.id === value)[0]
+    setCartName(filter.name)
+    setEcartId(value)
   }
 
   async function fetchEcart(){
+    try {
+      setLoader((prev: any)=>({...prev, getAllEcarts: true}))
+      const url = APIROUTES.getAllEcarts
 
+      const {res, data} = await Fetch(url, {
+        method: "GET",
+      });
+      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+
+      setData((prev: any)=>({...prev, ecarts: data.data?.ecarts}))
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
+      notif.error(`An Error Occured:  ${e.message}`)
+    }
   }
 
   async function createEcart(){
     if(cartname === "") return notif.error("e-cart name cant be empty")
-    console.log(cartname)
     try {
-      
+
+      setLoader((prev: any)=>({...prev, createEcart: true}))
+      const url = APIROUTES.createEcart
+
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({name: cartname})
+      });
+      setLoader((prev: any)=>({...prev, createEcart: false}))
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+
+      notif.success(data.message)
+      await sleep(1.1)
+      toggleSteps(1)
+      fetchEcart()
+
     } catch (e: any) {
-      
+      setLoader((prev: any)=>({...prev, createEcart: false}))
+      notif.error(`An Error Occured:  ${e.message}`)
     }
   }
 
+  // closeModal
+  function closeModal(){
+    setCartName("");
+    setEcartId("");
+    toggleActive()
+  }
+
   return (
-    <Modal isActive={active} clickHandler={toggleActive}>
+    <Modal isActive={active} clickHandler={closeModal}>
       <Dialog height={300}>
         <div className="w-full flex flex-col items-center justify-center">
           {/* <p className="text-white-100 font-extrabold">E-cart</p> */}
@@ -253,22 +365,30 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
         <div className="w-full flex flex-col items-start justify-start px-7">
           {
             steps === 1 ?
-              <>
-                <p className="text-white-200 text-[15px] ">E-cart Name: <span className="text-white-100 font-extrabold">{cartname}</span> </p>
-                <br />
-                <select onChange={(e)=> {
-                  setCartName(e.target.value)
-                  handleEcartId(e)
-                }} className="w-full px-4 py-3 rounded-[30px] text-white-200 bg-dark-100">
-                  <option value="">Select e-cart</option>
-                  <option value="Store-1.0" data-id={"e-cart-id"}>Store 1.0</option>
-                </select>
-                <br />
-                <button className="w-full px-4 py-3 rounded-[30px] bg-blue-300 flex items-center justify-center text-white-100 font-extrabold" onClick={handleAddToCart}>
-                  Continue
-                </button>
-                <small className="text-white-200 py-3">Dont have an e-cart? <span className="text-blue-200 font-extrabold cursor-pointer" onClick={()=> toggleSteps(2)}>create one</span> </small>
-              </>
+              Loader.getAllEcarts ? 
+                <LoaderScreenComp size={"md"}  />
+                :
+                <>
+                  <p className="text-white-200 text-[15px] ">E-cart Name: <span className="text-white-100 font-extrabold">{cartname}</span> </p>
+                  <br />
+                  <select onChange={(e)=> {
+                    handleEcartId(e)
+                  }} className="w-full px-4 py-3 rounded-[30px] text-white-200 bg-dark-100">
+                    <option value="">
+                      {Data.ecarts.length === 0 ? "No ecarts available." : "Select e-cart"}
+                    </option>
+                    {
+                      Data.ecarts.map((cart: any)=>(
+                        <option value={cart.id} data-id={cart.id}>{cart.name}</option>
+                      ))
+                    }
+                  </select>
+                  <br />
+                  <button className="w-full px-4 py-3 rounded-[30px] bg-blue-300 flex items-center justify-center text-white-100 font-extrabold" onClick={handleAddToCart}>
+                    Continue
+                  </button>
+                  <small className="text-white-200 py-3">Dont have an e-cart? <span className="text-blue-200 font-extrabold cursor-pointer" onClick={()=> toggleSteps(2)}>create one</span> </small>
+                </>
               :
               <>
                 <br />
@@ -276,14 +396,14 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
                 <br />
                 <br />
                 <div className="w-full flex items-center justify-between gap-5">
-                  <button className="w-full px-4 py-3 scale-[.89] hover:scale-[1] rounded-[30px] bg-dark-200 flex items-center justify-center text-white-200" onClick={()=> {
+                  <button className="w-full px-4 py-3 scale-[.89] hover:scale-[1] rounded-[30px] bg-dark-200 flex items-center justify-center text-white-200" disabled={Loader.createEcart} onClick={()=> {
                     toggleSteps(1)
                     setCartName("")
                   }}>
                     Back
                   </button>
-                  <button className="w-full px-2 py-3 rounded-[30px] bg-blue-300 transition-all scale-[.89] hover:scale-[1] flex items-center justify-center text-white-100 font-extrabold" onClick={createEcart}>
-                    Create Cart
+                  <button className="w-full px-2 py-3 rounded-[30px] bg-blue-300 transition-all scale-[.89] hover:scale-[1] flex items-center justify-center text-white-100 font-extrabold" onClick={createEcart} disabled={Loader.createEcart}>
+                    {Loader.createEcart ? <Spinner color="#fff" /> : "Create Cart" }
                   </button>
                 </div>
               </>
