@@ -12,6 +12,7 @@ const APIROUTES = {
     createEcart: `${BASE_URL}/cart/create`,
     getAllEcarts: `${BASE_URL}/cart/get/all`,
     getCartsItems: `${BASE_URL}/cart/get/:cartId`,
+    getCartsItemsForOrg: `${BASE_URL}/cart/get/org/:cartId`,
     addToCart: `${BASE_URL}/cart/add`,
     payForCart: `${BASE_URL}/cart/pay`,
     removeFromCart: `${BASE_URL}/cart/remove`,

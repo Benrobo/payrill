@@ -15,8 +15,11 @@ function Verify() {
   const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [activeState, setActiveState] = useState("scanner")
   const [qrcodeId, setQrcodeId] = useState("")
-
-
+  const [totalPayment, setTotalPayment] = useState({
+    amount: 0,
+    currency: ""
+  })
+  const [tempId, setTempId] = useState("")
   const toggleActiveState = (name: string)=> setActiveState(name)
 
   const cardStyle = {
@@ -39,15 +42,15 @@ function Verify() {
   }
 
   useEffect(()=>{
-    // if(qrcodeId === "") return;
-    getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
+    if(qrcodeId === "") return;
+    getItemById(qrcodeId)
   },[qrcodeId])
 
-  async function getItemById(itemId: string){
+  async function getItemById(ecartId: string){
     try {
 
       setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
-      const url = APIROUTES.getStoreItemById.replace(":itemId", itemId);
+      const url = APIROUTES.getCartsItemsForOrg.replace(":cartId", ecartId);
 
       const {res, data} = await Fetch(url, {
         method: "GET",
@@ -59,11 +62,21 @@ function Verify() {
         return
       }
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
-      setData((prev: any)=>({...prev, ecartItems: [data.data.item]}))
+      setData((prev: any)=>({...prev, ecartItems: data.data}))
+      calculateTotalPayment(data.data)
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
       setError((prev: any)=>({...prev, getAllEcartItems: `An Error Occured:  ${e.message}`}))
     }
+  }
+
+  function calculateTotalPayment(ecartItems: any){
+    const totalAmount = ecartItems.reduce((total: number, arr: any)=> {
+      total += arr.item_price * arr.item_quantity
+      return total;
+    },0)
+    const currency = ecartItems.map((cart: any)=> cart.item_currency)[0];
+    setTotalPayment({amount: totalAmount, currency})
   }
 
 
@@ -104,10 +117,17 @@ function Verify() {
               <ErrorScreen size='md' full={true} text={"No items available."} />
             }
           </div>
-          <div className="w-full h-auto flex items-center justify-between ">
-            <p className="text-white-200 text-[20px] font-extrabold">Total :</p>
-            <p className="text-white-100 text-[25px] font-extrabold"> $300 </p>
-          </div>
+          {totalPayment.currency !== "" ? 
+            <div className="w-full h-auto flex items-center justify-between ">
+              <p className="text-white-200 text-[20px] font-extrabold">Total :</p>
+              <p className="text-white-100 text-[25px] font-extrabold"> {formatCurrency(totalPayment.currency, totalPayment.amount)} </p>
+            </div>
+            :
+            <div className="w-full h-auto flex items-center justify-between ">
+              <p className="text-white-200 text-[20px] font-extrabold">Total :</p>
+              <p className="text-white-100 text-[25px] font-extrabold"> 0 </p>
+            </div>
+          }
         </div>
         <div id="" className="w-[800px] px-4 h-screen  mt-10 ">
           <div className="w-full flex items-start justify-start gap-5">
@@ -127,9 +147,11 @@ function Verify() {
             />
           </div>}
           {activeState === "custom" && <div id="custom" className="w-full h-[300px] flex flex-col items-center justify-center bg-dark-200 p-5 ">
-            <input type="text" placeholder='Tracking_Id' className="w-full px-4 py-3 text-white-100 bg-dark-100 rounded-[30px] " />
+            <input type="text" placeholder='Tracking_Id' className="w-full px-4 py-3 text-white-100 bg-dark-100 rounded-[30px] " onChange={(e)=> setTempId(e.target.value)} />
             <br />
-            <button className="w-full px-4 py-3 mt-5 rounded-[30px] bg-blue-300 text-center hover:bg-dark-100 font-extrabold border-[2px] border-solid border-blue-300 ">
+            <button className="w-full px-4 py-3 mt-5 rounded-[30px] bg-blue-300 text-center hover:bg-dark-100 font-extrabold border-[2px] border-solid border-blue-300 " onClick={()=> {
+              setQrcodeId(tempId)
+            }}>
               Continue Veirification
             </button>
           </div>}
