@@ -17,6 +17,8 @@ import DataContext from "../../context/DataContext";
 import APIROUTES from "../../apiRoutes";
 import Fetch from "../../utils/fetch";
 import { ErrorScreen } from "../../components/UI-COMP/error";
+import { IoCartSharp } from "react-icons/io5";
+import { data } from "autoprefixer";
 
 const qrcodeconstraints = {
   facingMode: "",
@@ -26,7 +28,7 @@ const notif = new Notification(10000)
 
 
 function Scanner() {
-  const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
+  const {Data, Loader, pin, clearPin, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [qrcodeId, setQrcodeId] = useState("");
   const [steps, setSteps] = useState(2);
   const [activeAlertBox, setActiveAlertBox] = useState(false);
@@ -35,7 +37,7 @@ function Scanner() {
 
   const toggleActiveAlertBox = () => setActiveAlertBox(!activeAlertBox);
   const toggleActiveKeyboard = () => setActiveKeyboard(!activeKeyboard);
-
+  const [paymentData, setPaymentData] = useState({})
   const toggleSteps = (step: number) => setSteps(step);
 
   function handleQrcodeResult(result: any, error: any) {
@@ -47,13 +49,42 @@ function Scanner() {
     }
   }
 
-  function handleEcartPayment() {
-    toggleActiveAlertBox();
+  async function handleEcartPayment() {
+    const payload = {
+      ecartId : Data.ecartItems[0].ecart_id,
+      pin: pin.originalPin
+    }
+    try {
+
+      setLoader((prev: any)=>({...prev, payForCart: true}))
+      const url = APIROUTES.payForCart
+
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      setLoader((prev: any)=>({...prev, payForCart: false}))
+
+      if(!data.success){
+        notif.error(data.message);
+        clearPin()
+        return
+      }
+
+      notif.success(data.message);
+      clearPin()
+      setPaymentData(data.data)
+      toggleActiveAlertBox();
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, payForCart: false}))
+      notif.error(`An Error Occured:  ${e.message}`)
+    }
+    return console.log(payload)
   }
 
   useEffect(()=>{
     // if(qrcodeId === "") return;
-    getItemById("365e2545-42b9-44c6-ab83-74a9c66a5462")
+    getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
   },[qrcodeId])
 
   async function getItemById(itemId: string){
@@ -79,6 +110,18 @@ function Scanner() {
       setLoader((prev: any)=>({...prev, getStoreItems: false}))
       setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
     }
+  }
+
+  if(Loader.getStoreItems){
+    return <LoaderScreenComp full={true}/>
+  }
+  
+  if(Error.getStoreItems !== null){
+    return <ErrorScreen full={true} text={Error.getStoreItems} />
+  }
+
+  if(!Loader.getStoreItems && Object.entries(productInfo).length === 0){
+    return <ErrorScreen full={true} text={"Oops!! looks like this item no longer exist or was not found."} size="md" />
   }
 
   return (
@@ -112,6 +155,7 @@ function Scanner() {
             active={activeKeyboard}
             title="Checkout Payment"
             handler={handleEcartPayment}
+            toggleKeyboard={toggleActiveKeyboard}
           />
         ) : (
           ""
@@ -123,8 +167,11 @@ function Scanner() {
           toggleKeyboard={toggleActiveKeyboard}
           toggleStep={toggleSteps}
           toggleActive={toggleActiveAlertBox}
+          paymentData={paymentData}
         />
       )}
+
+      { Loader.payForCart && <LoaderScreen full={true} text="Making payment.." /> }
     </Layout>
   );
 }
@@ -209,6 +256,12 @@ function ProductInfo({ toggleStep, data }: any) {
           >
             <FaCartPlus className="text-[15px] text-white-100 " />
           </button>
+          <button
+            onClick={()=>toggleStep(3)}
+            className="px-4 py-3 scale-[.80] flex items-center justify-start gap-2 rounded-[30px] bg-blue-300 absolute right-[50px] top-1 "
+          >
+            View Cart <IoCartSharp className="text-[25px] text-white-100 " />
+          </button>
         </div>
       </div>
       <div className="w-full flex items-center justify-between px-3 py-3">
@@ -265,7 +318,7 @@ function ProductInfo({ toggleStep, data }: any) {
           Add to Cart
         </button>
       </div>
-      <SelectEcart active={selectcart} handleAddToCart={handleAddToCart} setEcartId={setEcartId} toggleActive={toggleEcart} />
+      {selectcart && <SelectEcart active={selectcart} handleAddToCart={handleAddToCart} setEcartId={setEcartId} toggleActive={toggleEcart} />}
       {addtocart && <LoaderScreen text="Adding to e-cart.." /> }
     </div>
   );
@@ -420,9 +473,93 @@ function CheckoutCont({
   toggleAtiveAlertBox,
   toggleKeyboard,
 }: any) {
+  
+  const {Data, Loader, pin, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
+  const [cartId, setCartId] = useState("")
+  const [totalPayment, setTotalPayment] = useState({
+    amount: 0,
+    currency: ""
+  })
+  const [tempCheckoutInfo, setTempCheckoutInfo] = useState([])
+
+  useEffect(()=>{
+    fetchEcart()
+    // console.log(Data.ecarts)
+  },[])
+  
+  useEffect(()=>{
+    if(cartId === "") return;
+    getEcartItems(cartId)
+    
+  },[cartId])
+
   async function handleCheckout() {
     toggleStep(4);
     toggleKeyboard(true);
+  }
+
+  async function fetchEcart(){
+    try {
+      setLoader((prev: any)=>({...prev, getAllEcarts: true}))
+      const url = APIROUTES.getAllEcarts
+
+      const {res, data} = await Fetch(url, {
+        method: "GET",
+      });
+      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+
+      setData((prev: any)=>({...prev, ecarts: data.data?.ecarts}))
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
+      notif.error(`An Error Occured:  ${e.message}`)
+    }
+  }
+
+  async function getEcartItems(cartId: string){
+    try {
+
+      setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
+      const url = APIROUTES.getCartsItems.replace(":cartId", cartId)
+
+      const {res, data} = await Fetch(url, {
+        method: "GET"
+      });
+      setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
+
+      if(!data.success){
+        setError((prev: any)=>({...prev, getAllEcartItems: data.message}))
+        return
+      }
+
+      setData((prev: any)=>({...prev, ecartItems: data.data.items}))
+      setError((prev: any)=>({...prev, getAllEcartItems: null}))
+      calculateTotalPayment(data.data.items)
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
+      setError((prev: any)=>({...prev, getAllEcartItems: `An Error Occured:  ${e.message}`}))
+    }
+  }
+
+  function calculateTotalPayment(ecartItems: any){
+    const totalAmount = ecartItems.reduce((total: number, arr: any)=> {
+      total += arr.item_price * arr.item_quantity
+      return total;
+    },0)
+    const currency = ecartItems.map((cart: any)=> cart.item_currency)[0];
+    setTotalPayment({amount: totalAmount, currency})
+  }
+
+  if(Loader.getAllEcarts){
+    return <LoaderScreenComp full={true} />
+  }
+
+  if(Error.getAllEcarts !== null){
+    return <ErrorScreen full={true} text={Error.getAllEcarts} />
   }
 
   return (
@@ -437,27 +574,48 @@ function CheckoutCont({
         <p className="text-white-100 text-[18px] ml-5 font-extrabold ">
           Checkout
         </p>
-        <button
-          onClick={() => console.log(1)}
-          className="px-2 py-2 rounded-md bg-dark-300 absolute top-4 right-5 "
-        >
-          <FaTrashAlt className="text-[15px] text-white-100 " />
-        </button>
+        <select name="" id="" className="absolute top-4 right-5 px-4 py-3 text-[12px] rounded-[30px] bg-dark-200 text-white-100" onChange={(e: any)=>{
+          const value = e.target.value;
+          if(value === "") return;
+          setCartId(value)
+        }}>
+          <option value="">Select E-carts.</option>
+          {
+            Data.ecarts.length > 0 ?
+              Data.ecarts.map((data: any)=>(
+                <option value={data.id} key={data.id}>{data.name}</option>
+              ))
+              :
+              <option value="">No ecarts available.</option>
+          }
+        </select>
       </div>
       <br />
-      <div className="w-full h-[450px] noScrollBar flex flex-col items-center justify-center px-3 gap-5 overflow-y-scroll ">
-        {Array(12)
-          .fill(0)
-          .map((data: any, i: number) => (
-            <CartCard key={i} data={data} />
-          ))}
+      <div className="w-full h-[450px] noScrollBar flex flex-col items-start justify-start px-3 gap-5 overflow-y-scroll ">
+        {
+          Loader.getAllEcartItems ? 
+            <LoaderScreenComp full={true} />
+            :
+          Error.getAllEcartItems !== null ?
+            <ErrorScreen full={true} text={Error.getAllEcartItems} />
+            :
+          cartId === "" && Data.ecartItems.length === 0 ?
+            <ErrorScreen full={true} text="Select e-cart" size="md" />
+            :
+          cartId !== "" && Data.ecartItems.length > 0 ?
+            Data.ecartItems.map((data: any, i: number) => (
+                <CartCard key={i} getEcartItems={getEcartItems} setTempCheckoutInfo={setTempCheckoutInfo} calculateTotalPayment={calculateTotalPayment} data={data} />
+              ))
+            :
+            <ErrorScreen full={true} text="No cart items" size="md" />
+        }
         <div className="w-full h-[120px] "></div>
       </div>
-      <div className="w-full h-[100px] flex items-center justify-between absolute bottom-0 left-0 px-3 ">
+      {(cartId !== "" && Data.ecartItems.length > 0) && <div className="w-full h-[100px] flex items-end py-2 justify-between absolute bottom-0 left-0 px-3 ">
         <div className="w-auto flex flex-col items-start justify-start">
           <p className="text-white-300 text-[12px] ">Total Price</p>
           <p className="text-white-100 text-[20px] font-extrabold ">
-            {formatCurrency("USD", 700)}
+            {(totalPayment.currency === "" && totalPayment.amount === 0 ) ? "" :  formatCurrency(totalPayment.currency, totalPayment.amount)}
           </p>
         </div>
         <button
@@ -466,7 +624,7 @@ function CheckoutCont({
         >
           Checkout & Pay Now
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -476,6 +634,7 @@ function AlertContainer({
   toggleActive,
   toggleKeyboard,
   toggleStep,
+  paymentData
 }: any) {
   async function handleRefund() {}
 
@@ -490,26 +649,23 @@ function AlertContainer({
   return (
     <Modal isActive={active} clickHandler={handleCloseModal}>
       <div className="w-full h-screen flex flex-col items-center justify-center">
-        <div className="w-[350px] h-auto bg-dark-200 rounded-md ">
+        <div className="w-[450px] h-auto bg-dark-200 rounded-md ">
           <div className="w-full flex flex-col text-center items-center justify-center">
             <div className="w-full px-3 py-3">
               <p className="text-green-200 text-[20px] font-extrabold">
                 Payment Successfull
               </p>
               <p className="text-white-300 text-[15px]">
-                Your payment for{" "}
-                <span className="text-white-100 font-extrabold">$500</span> was
-                successfull.{" "}
+                Your payment for <span className="text-white-100 font-extrabold">{formatCurrency(paymentData.currency, paymentData.amount)}</span> was
+                successfull.
               </p>
             </div>
-            <div className="w-full flex flex-col items-center justify-center">
+            <div className="w-full flex flex-col items-center justify-center px-4">
               <p className="text-white-300 text-[15px]">
-                {" "}
-                E-cart Id :{" "}
-                <span className="text-white-100 font-extrabold capitalize text-[20px] ">
-                  {" "}
-                  A6XFGH78{" "}
-                </span>{" "}
+                
+                ID : <span className="text-white-100 font-extrabold text-[15px] ">
+                  {paymentData.ecartId}
+                </span>
               </p>
               <br />
               <div className="w-full flex flex-col items-center justify-center h-auto bg-white-100">
@@ -517,7 +673,7 @@ function AlertContainer({
                   scale={10}
                   width={"100%"}
                   height={"100%"}
-                  value="dfvdfvdfdfdvfv"
+                  value={paymentData.ecartId}
                 />
               </div>
               <div className="w-full flex flex-col items-center justify-center px-5 py-5 ">
@@ -536,19 +692,60 @@ function AlertContainer({
   );
 }
 
-function CartCard({ data, key }: any) {
+function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPayment, key }: any) {
+  const {Data, setData, setLoader, setError} = useContext<any>(DataContext)
+
   const productStyle = {
-    backgroundImage: `url("${milkImg}")`,
+    backgroundImage: `url("${data.item_image}")`,
     backgroundSize: "contain",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
 
-  const [quantity, setQuantity] = useState(1);
+  let [quantity, setQuantity] = useState(1);
 
-  const incQty = () => setQuantity((prev) => (prev += 1));
-  const decQty = () =>
-    setQuantity((prev) => (prev <= 1 ? (prev = 1) : (prev -= 1)));
+  useEffect(()=>{
+    setQuantity(data.item_quantity)
+  },[])
+  
+  const itemData = data;
+
+  async function updateItemQuantity(quantity: any){
+    try {
+
+      setLoader((prev: any)=>({...prev, updatCartItems: true}))
+      const url = APIROUTES.addToCart
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          cartId: itemData.ecart_id,
+          itemId: itemData.item_id,
+          quantity,
+        })
+      });
+      setLoader((prev: any)=>({...prev, updatCartItems: false}))
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+
+      getEcartItems(itemData.ecart_id)
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, updatCartItems: false}))
+      notif.error(`An Error Occured:  ${e.message}`)
+    }
+  }
+
+  const incQty = () => {
+    const newQty = quantity += 1
+    updateItemQuantity(newQty)
+  }
+  const decQty = () =>{
+    const newQty = quantity -= 1
+    updateItemQuantity(newQty)
+  }
+    
 
   return (
     <div
@@ -560,9 +757,9 @@ function CartCard({ data, key }: any) {
         style={{ ...productStyle }}
       ></div>
       <div className="w-auto flex flex-col items-start justify-start">
-        <p className="text-white-100 text-[15px] font-extrabold">Milk Can</p>
+        <p className="text-white-100 text-[15px] font-extrabold capitalize ">{data.item_name}</p>
         <p className="text-white-200 text-[12px] font-extrabold">
-          {formatCurrency("USD", 7)}
+          {formatCurrency(data.item_currency, data.item_price)}
         </p>
       </div>
       <div
@@ -571,7 +768,9 @@ function CartCard({ data, key }: any) {
       >
         <button
           className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-          onClick={decQty}
+          onClick={()=>{
+            decQty()
+          }}
         >
           -
         </button>
@@ -580,13 +779,16 @@ function CartCard({ data, key }: any) {
         </button>
         <button
           className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-          onClick={incQty}
+          onClick={()=>{
+            incQty()
+          }}
         >
           +
         </button>
       </div>
       <button
-        onClick={() => console.log(1)}
+        onClick={() => console.log(Data.ecartItems)}
+        data-id={data.item_id}
         className="h-full px-2 py-2 rounded-md bg-red-800 text-red-200 "
       >
         <FaTrashAlt className="text-[15px]" />

@@ -55,6 +55,8 @@ export function DataContextProvider({ children }: any) {
         deleteStoreItems: false,
         createEcart: false,
         addToCart: false,
+        updatCartItems: false,
+        payForCart: false,
         getAllEcarts: false,
         getAllEcartItems: false
     })
@@ -76,6 +78,8 @@ export function DataContextProvider({ children }: any) {
         deleteStoreItems: null,
         createEcart: null,
         addToCart: null,
+        updatCartItems: null,
+        payForCart: null,
         getAllEcarts: null,
         getAllEcartItems: null
     })

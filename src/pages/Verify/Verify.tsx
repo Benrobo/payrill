@@ -1,11 +1,18 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import OrgLayout from '../../components/Layout/OrgLayout'
 import milkImg from "../../assets/images/products/milk.png"
 import { MdProductionQuantityLimits } from 'react-icons/md'
 import { QrReader } from 'react-qr-reader';
+import DataContext from '../../context/DataContext';
+import APIROUTES from '../../apiRoutes';
+import Fetch from '../../utils/fetch';
+import { LoaderScreenComp } from '../../components/UI-COMP/loader';
+import { ErrorScreen } from '../../components/UI-COMP/error';
+import { formatCurrency } from '../../utils/creditCard';
 
 function Verify() {
 
+  const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [activeState, setActiveState] = useState("scanner")
   const [qrcodeId, setQrcodeId] = useState("")
 
@@ -13,7 +20,6 @@ function Verify() {
   const toggleActiveState = (name: string)=> setActiveState(name)
 
   const cardStyle = {
-    backgroundImage: `url(${milkImg})`,
     backgroundSize: "contain",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat"
@@ -32,6 +38,35 @@ function Verify() {
     }
   }
 
+  useEffect(()=>{
+    // if(qrcodeId === "") return;
+    getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
+  },[qrcodeId])
+
+  async function getItemById(itemId: string){
+    try {
+
+      setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
+      const url = APIROUTES.getStoreItemById.replace(":itemId", itemId);
+
+      const {res, data} = await Fetch(url, {
+        method: "GET",
+      });
+      setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
+
+      if(!data.success){
+        setError((prev: any)=>({...prev, getAllEcartItems: data.message}))
+        return
+      }
+      setError((prev: any)=>({...prev, getAllEcartItems: null}))
+      setData((prev: any)=>({...prev, ecartItems: [data.data.item]}))
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
+      setError((prev: any)=>({...prev, getAllEcartItems: `An Error Occured:  ${e.message}`}))
+    }
+  }
+
+
   return (
     <OrgLayout sideBarActiveName='verify'>
       <div className="w-full h-screen flex items-start justify-start">
@@ -43,20 +78,30 @@ function Verify() {
           <br />
           <div className="w-full h-[450px] flex flex-col items-start justify-start gap-10 overflow-y-scroll noScrollBar showBar ">
             {
-              Array(10).fill(0).map((data: any, i: number)=>(
-                <div key={i} className="w-[600px] rounded-md bg-dark-200 flex items-center justify-between p-4">
-                  <div className="w-auto flex items-start justify-start gap-5">
-                    <div className="w-[50px] h-[50px] bg-dark-200 rounded-md" style={{...cardStyle}}></div>
-                    <div className="w-auto flex flex-col items-start justify-start">
-                      <p className="text-white-200 font-extrabold">Item Name</p>
-                      <p className="text-white-200 font-extrabold ">$200</p>
+
+              Loader.getAllEcartItems ? 
+                <LoaderScreenComp full={true} />
+                :
+              Error.getAllEcartItems !== null ?
+                <ErrorScreen size='md' full={true} text={Error.getAllEcartItems} />
+                :
+              Data.ecartItems.length > 0 ?  
+                Data.ecartItems.map((data: any, i: number)=>(
+                  <div key={i} className="w-[600px] rounded-md bg-dark-200 flex items-center justify-between p-4">
+                    <div className="w-auto flex items-start justify-start gap-5">
+                      <div className="w-[50px] h-[50px] bg-dark-200 rounded-md" style={{...cardStyle, backgroundImage: `url(${data.item_image})`}}></div>
+                      <div className="w-auto flex flex-col items-start justify-start">
+                        <p className="text-white-200 font-extrabold">{data.item_name}</p>
+                        <p className="text-white-200 font-extrabold ">{formatCurrency(data.item_currency, data.item_price)}</p>
+                      </div>
+                    </div>
+                    <div className="w-auto flex items-center justify-center gap-3 text-white-200 font-extrabold ml-6">
+                      <MdProductionQuantityLimits className='px-2 py-1 text-white-200 rounded-md text-[30px] bg-dark-100 font-extrabold  ' /> {data.item_quantity} qty
                     </div>
                   </div>
-                  <div className="w-auto flex items-center justify-center gap-3 text-white-200 font-extrabold ml-6">
-                    <MdProductionQuantityLimits className='px-2 py-1 text-white-200 rounded-md text-[30px] bg-dark-100 font-extrabold  ' /> 20 qty
-                  </div>
-                </div>
-              ))
+                ))
+                :
+              <ErrorScreen size='md' full={true} text={"No items available."} />
             }
           </div>
           <div className="w-full h-auto flex items-center justify-between ">

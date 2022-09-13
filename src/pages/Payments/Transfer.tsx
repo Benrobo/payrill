@@ -16,6 +16,7 @@ import Notification from '../../utils/toast'
 import APIROUTES from '../../apiRoutes'
 import Fetch from '../../utils/fetch'
 import { ErrorScreen } from '../../components/UI-COMP/error'
+import { sleep } from '../../utils'
 
 
 const notif = new Notification(10000)
@@ -155,15 +156,34 @@ function Transfer() {
     async function handleTransactionData(){
         transferData["pin"] = pin.originalPin
         console.log(transferData);
-        // setLoader((prev: any)=>({...prev, ["transfer"]: true }))
-        // 
-        setTimeout(()=>{
-            setLoader((prev: any)=>({...prev, ["transfer"]: false }))
+        try{
+            const url = APIROUTES.transferFund.replace(":receiverId", transferData.userId as any);
+            setLoader((prev: any)=>({...prev, transfer: true}))
+            const {res, data} = await Fetch(url, {
+                method: "POST",
+                body: JSON.stringify({
+                    amount: +transferData.amount,
+                    currency: transferData.currency,
+                    pin: transferData.pin
+                })
+            });
+            setLoader((prev: any)=>({...prev, transfer: false}))
+
+            if(!data.success){
+                return notif.error(data.message)
+            }
+
+            notif.success(data.message)
+            await sleep(1.1)
             toggleKeyboard()
             clearStep("dialog", 1)
+            clearPin()
             setActiveState((prev: any)=> ({...prev, ["dialog"]: false}))
-            
-        }, 5000)
+        }   
+        catch(e: any){
+            setLoader((prev: any)=>({...prev, transfer: false}))
+            notif.error(`An Error occured: ${e.message}`)
+        }
     }
 
     return (
@@ -180,7 +200,7 @@ function Transfer() {
                 </div>
                 <div id="input" className="w-full h-auto flex flex-row items-center justify-start bg-dark-200 rounded-md  px-3 py-1">
                     <RiSearchLine className='text-white-300 text-[20px] ' />
-                    <input type="text" className="w-full px-4 py-2 border-none outline-none bg-none bg-dark-200 font-extrabold " placeholder='@username, email...' onChange={searchUsers} />
+                    <input type="text" className="w-full px-4 py-2 border-none outline-none bg-none bg-dark-200 font-extrabold " placeholder='@username' onChange={searchUsers} />
                 </div>
                 <br />
 
@@ -199,23 +219,18 @@ function Transfer() {
                 }
 
 
-                <TransferDialog 
+                {activeState.dialog && <TransferDialog 
                     active={activeState.dialog} 
                     handleActiveState={closeDialogModal} 
                     toggleKeyboard={toggleKeyboard} 
                     data={selectedUser} 
                     setTransferData={setTransferData} 
                     transferData={transferData}
-                />
+                />}
 
                 <Keyboard active={activeState.keyboard} toggleKeyboard={toggleKeyboard} handler={handleTransactionData} />
                 
-                {
-                    Loader.transfer ?
-                        <LoaderScreen />
-                    :
-                    ""
-                }
+                {Loader.transfer && <LoaderScreen />}
             </div>
         </Layout>
     )
@@ -324,8 +339,10 @@ function TransferDialog({active, handleActiveState, toggleKeyboard, data, setTra
 
 function Step1({handleStep, data, setTransferData}: any){
 
-    const {walletInfo} = useContext<any>(DataContext)
+    const {walletInfo, Loader, Error} = useContext<any>(DataContext)
     const [balance, setBalance] = useState(0);
+    const [currency, setCurrency] = useState("");
+
 
 
     const avatarImg = {
@@ -340,12 +357,32 @@ function Step1({handleStep, data, setTransferData}: any){
     const handleInput = (e: any)=>{
         const value = e.target.value;
         setTransferData((prev: any)=>({...prev, currency: value}))
+        setCurrency(value)
+    }
+
+    useEffect(()=>{
+        if(currency === "") return;
+        getWalletBalance(currency)
+    },[currency])
+
+    function getWalletBalance(currency: string){
+        if(Object.entries(walletInfo).length === 0) return
+        let filterCurr;
+        if(typeof currency === "undefined" || currency === ""){
+          filterCurr = walletInfo.accounts[0];
+          setCurrency(filterCurr.currency)
+          setBalance(filterCurr.balance)
+          return;
+        }
+        filterCurr = walletInfo.accounts.filter((curr: any)=> curr.currency === currency)[0]
+        setCurrency(filterCurr.currency)
+        setBalance(filterCurr.balance)
     }
 
     return (
         <>
             <div id="head" className="w-full flex flex-col items-center justify-center mt-5">
-                <p className="text-white-300">PayRill Balance : <span className="text-white-100 font-extrabold"> {formatCurrency("USD", balance)} </span> </p>
+                <p className="text-white-300">PayRill Balance : <span className="text-white-100 font-extrabold"> { currency === "" ? "" : formatCurrency(currency, balance)} </span> </p>
             </div>
             <div id="content" className="w-full flex flex-col items-center justify-center mt-5">
                 <div id="img" className="w-[50px] h-[50px] rounded-[50%] bg-dark-100 border-[3px] border-solid border-blue-200 " style={{...avatarImg, background: `url("https://avatars.dicebear.com/api/avataaars/${userData?.username}.svg")`,}}
@@ -368,7 +405,17 @@ function Step1({handleStep, data, setTransferData}: any){
                 <br />
                 <select name="" id="" onChange={handleInput} className="w-full px-4 py-3 bg-dark-100 text-white-100 rounded-[30px]">
                     <option value="">Select Currency Account</option>
-                    <option value="USD">USD</option>
+                    {
+                        Loader.wallet ? 
+                            <option value="">Loading...</option>
+                            :
+                        Error.wallet ?
+                            <option value="">{Error.wallet}</option>
+                            :
+                        walletInfo.accounts.map((act: any)=>(
+                            <option value={act.currency} key={act.id}>{act.currency}</option>
+                        ))
+                    }
                 </select>
                 <br />
                 <button className="w-full flex flex-col rounded-[30px] px-4 py-3 items-center justify-center bg-blue-300 transition-all scale-[1] hover:scale-[.95] text-white-100 font-extrabold " onClick={()=>handleStep(1)}>
