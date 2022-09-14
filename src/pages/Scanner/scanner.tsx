@@ -34,11 +34,16 @@ function Scanner() {
   const [activeAlertBox, setActiveAlertBox] = useState(false);
   const [activeKeyboard, setActiveKeyboard] = useState(false);
   const [productInfo, setProducInfo] = useState<any>({})
+  const [ecartInfo, setEcartInfo] = useState({})
 
   const toggleActiveAlertBox = () => setActiveAlertBox(!activeAlertBox);
-  const toggleActiveKeyboard = () => setActiveKeyboard(!activeKeyboard);
+  const toggleActiveKeyboard = () => {
+    setActiveKeyboard(!activeKeyboard)
+    if(steps === 4) toggleSteps(2)
+  };
   const [paymentData, setPaymentData] = useState({})
   const toggleSteps = (step: number) => setSteps(step);
+  const [activeAlertMsg, setActiveAlertMsg] = useState("")
 
   function handleQrcodeResult(result: any, error: any) {
     if (!!result) {
@@ -149,17 +154,19 @@ function Scanner() {
             toggleStep={toggleSteps}
             toggleKeyboard={toggleActiveKeyboard}
             toggleAtiveAlertBox={toggleActiveAlertBox}
+            setActiveAlertMsg={setActiveAlertMsg}
+            setEcartInfo={setEcartInfo}
           />
-        ) : steps === 4 ? (
+        ) : steps === 4 ?
           <Keyboard
             active={activeKeyboard}
             title="Checkout Payment"
             handler={handleEcartPayment}
             toggleKeyboard={toggleActiveKeyboard}
           />
-        ) : (
-          ""
-        )}
+        :
+        ""
+        }
       </div>
       {activeAlertBox && (
         <AlertContainer
@@ -168,6 +175,8 @@ function Scanner() {
           toggleStep={toggleSteps}
           toggleActive={toggleActiveAlertBox}
           paymentData={paymentData}
+          message={activeAlertMsg}
+          ecartInfo={ecartInfo}
         />
       )}
 
@@ -431,7 +440,7 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
                       {Data.ecarts.length === 0 ? "No ecarts available." : "Select e-cart"}
                     </option>
                     {
-                      Data.ecarts.map((cart: any)=>(
+                      Data.ecarts.filter((ecart: any)=> ecart.confirmed !== "true").map((cart: any)=>(
                         <option value={cart.id} data-id={cart.id}>{cart.name}</option>
                       ))
                     }
@@ -471,7 +480,9 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
 function CheckoutCont({
   toggleStep,
   toggleAtiveAlertBox,
+  setActiveAlertMsg,
   toggleKeyboard,
+  setEcartInfo
 }: any) {
   
   const {Data, Loader, pin, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
@@ -481,6 +492,7 @@ function CheckoutCont({
     currency: ""
   })
   const [tempCheckoutInfo, setTempCheckoutInfo] = useState([])
+  const [selectedEcart, setSelectedEcart] = useState<any>({})
 
   useEffect(()=>{
     fetchEcart()
@@ -491,9 +503,16 @@ function CheckoutCont({
     if(cartId === "") return;
     getEcartItems(cartId)
     
+    const $ecart = Data.ecarts.filter((ecart: any)=> ecart.id === cartId)[0]
+    setSelectedEcart($ecart)
   },[cartId])
 
   async function handleCheckout() {
+    if(selectedEcart.paid === "true" && selectedEcart.confirmed === "false"){
+      setActiveAlertMsg("Payment has been made for this ecart.")
+      toggleAtiveAlertBox()
+      return
+    }
     toggleStep(4);
     toggleKeyboard(true);
   }
@@ -537,6 +556,7 @@ function CheckoutCont({
       }
 
       setData((prev: any)=>({...prev, ecartItems: data.data.items}))
+      setEcartInfo(data.data)
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
       calculateTotalPayment(data.data.items)
     } catch (e: any) {
@@ -564,7 +584,7 @@ function CheckoutCont({
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      <div className="w-full flex items-center justify-start px-4 py-3 ">
+      <div className="relative w-full flex items-center justify-start px-4 py-3 ">
         <button
           onClick={() => toggleStep(1)}
           className="px-3 py-2 rounded-md bg-dark-300"
@@ -572,7 +592,14 @@ function CheckoutCont({
           <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
         </button>
         <p className="text-white-100 text-[18px] ml-5 font-extrabold ">
-          Checkout
+          Checkout 
+          {
+            Object.entries(selectedEcart).length > 0 
+            && 
+            <span className="absolute left-[15px] bottom-[-30px] text-[12px] px-3 py-1 rounded-md bg-blue-300 text-white-100">
+              { selectedEcart?.paid === "false" ? "unpaid" : selectedEcart.paid === "true" && selectedEcart.paid === "false" ? "uncomfirmed" : "" }
+            </span>
+          }
         </p>
         <select name="" id="" className="absolute top-4 right-5 px-4 py-3 text-[12px] rounded-[30px] bg-dark-200 text-white-100" onChange={(e: any)=>{
           const value = e.target.value;
@@ -582,7 +609,7 @@ function CheckoutCont({
           <option value="">Select E-carts.</option>
           {
             Data.ecarts.length > 0 ?
-              Data.ecarts.map((data: any)=>(
+              Data.ecarts.filter((ecart: any)=> ecart.confirmed === "false").map((data: any)=>(
                 <option value={data.id} key={data.id}>{data.name}</option>
               ))
               :
@@ -590,6 +617,7 @@ function CheckoutCont({
           }
         </select>
       </div>
+      <br />
       <br />
       <div className="w-full h-[450px] noScrollBar flex flex-col items-start justify-start px-3 gap-5 overflow-y-scroll ">
         {
@@ -634,7 +662,9 @@ function AlertContainer({
   toggleActive,
   toggleKeyboard,
   toggleStep,
-  paymentData
+  paymentData,
+  message,
+  ecartInfo
 }: any) {
   async function handleRefund() {}
 
@@ -646,6 +676,10 @@ function AlertContainer({
     toggleStep(2);
   }
 
+  console.log(ecartInfo)
+
+  const isConfirmed = (ecartInfo.paid === "true" && ecartInfo.confirmed === "false") ? "false" : "true"
+
   return (
     <Modal isActive={active} clickHandler={handleCloseModal}>
       <div className="w-full h-screen flex flex-col items-center justify-center">
@@ -655,16 +689,16 @@ function AlertContainer({
               <p className="text-green-200 text-[20px] font-extrabold">
                 Payment Successfull
               </p>
-              <p className="text-white-300 text-[15px]">
+              {message === "" ? <p className="text-white-300 text-[15px]">
                 Your payment for <span className="text-white-100 font-extrabold">{formatCurrency(paymentData.currency, paymentData.amount)}</span> was
                 successfull.
-              </p>
+              </p> : <p className="text-white-300 text-[15px]">{message}</p>}
             </div>
             <div className="w-full flex flex-col items-center justify-center px-4">
               <p className="text-white-300 text-[15px]">
                 
                 ID : <span className="text-white-100 font-extrabold text-[15px] ">
-                  {paymentData.ecartId}
+                  {isConfirmed === "false" ? ecartInfo.id : paymentData.ecartId}
                 </span>
               </p>
               <br />
@@ -673,12 +707,13 @@ function AlertContainer({
                   scale={10}
                   width={"100%"}
                   height={"100%"}
-                  value={paymentData.ecartId}
+                  value={isConfirmed === "false" ? ecartInfo.id : paymentData.ecartId}
                 />
               </div>
               <div className="w-full flex flex-col items-center justify-center px-5 py-5 ">
                 <button
-                  className="w-full px-5 py-3 rounded-[30px] bg-blue-300 font-extrabold text-white-100 transition-all hover:bg-dark-100 scale-[.95] mr-5 "
+                  className={`w-full px-5 py-3 rounded-[30px] bg-blue-300 font-extrabold text-white-100 transition-all hover:bg-dark-100 scale-[.95] mr-5 ${isConfirmed === "true" ? " opacity-[.5] " : "opacity-1"} `}
+                  disabled={isConfirmed === "true" ? true : false}
                   onClick={handleRefund}
                 >
                   Refund

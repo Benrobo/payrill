@@ -473,14 +473,19 @@ function SelectedProduct({toggleProduct, data}: any){
 
 function ViewProductQrCode({toggleQrcode, value}: any){
 
-  const downloadQrcode = ()=>{
-
+  const downloadQrcode = (e: any)=>{
+    e.preventDefault()
+    let qrcode = document.querySelector("#product-qrcode") as any;
+    let a = document.createElement("a") as any;
+    a.href = qrcode?.src;
+    a.download=  "product-qrcode"
+    a.click()
   }
 
   return (
     <OrgModal isActive={true} clickHandler={toggleQrcode} >
       <div className="w-[350px] flex flex-col items-center justify-center h-auto bg-white-100 rounded-md ">
-        <QRCode scale={10} width={"100%"} height={"100%"} value={value} />
+        <QRCode scale={10} width={"100%"} height={"100%"} id="product-qrcode" value={value} />
         <button className="w-[200px] px-3 py-3 rounded-[30px] text-[18px] text-white-100 bg-dark-100 flex flex-col items-center justify-center" onClick={downloadQrcode}>
           Download
         </button>

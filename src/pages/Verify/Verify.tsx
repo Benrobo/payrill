@@ -35,6 +35,7 @@ function Verify() {
   function handleQrcodeResult(result: any, error: any){
     if (!!result) {
       setQrcodeId(result?.text);
+      console.log(result)
     }
     if (!!error) {
       // console.info(error);

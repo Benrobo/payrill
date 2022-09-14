@@ -1,14 +1,21 @@
 import React, { useContext, useState } from 'react'
 import { FaLongArrowAltLeft } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import APIROUTES from '../../apiRoutes'
 import { Layout } from '../../components'
 import Dialog from '../../components/Dialog/Dialog'
 import Keyboard from '../../components/UI-COMP/keyboard'
+import { LoaderScreen, LoaderScreenComp } from '../../components/UI-COMP/loader'
 import Modal from '../../components/UI-COMP/modal'
 import DataContext from '../../context/DataContext'
 import { CryptoCoins } from '../../data'
+import { sleep } from '../../utils'
 import { formatCurrency } from '../../utils/creditCard'
+import Fetch from '../../utils/fetch'
+import Notification from '../../utils/toast'
 
+
+const notif = new Notification(100000)
 
 const bgImageStyle = {
     backgroundSize: "cover",
@@ -80,12 +87,13 @@ function CryptoCurrencies() {
 export default CryptoCurrencies
 
 function PaymentSection({ coinData, active, togglePayment }: any) {
-    const { steps, setSteps, clearStep, clearPin } = useContext<any>(DataContext);
+    const {setLoader, Loader, walletInfo, pin, setData, Error, steps, setSteps, clearStep, clearPin } = useContext<any>(DataContext);
     const [kbactive, setKbActive] = useState(true);
-    const [paymentInfo, setPaymentInfo] = useState({
+    const [paymentInfo, setPaymentInfo] = useState<any>({
         amount: "",
         cryptoAddress: "",
-        walletId: ""
+        walletId: "",
+        currency: ""
     })
 
     const toggleStep = (step: number) =>
@@ -97,7 +105,7 @@ function PaymentSection({ coinData, active, togglePayment }: any) {
         setPaymentInfo((prev: any)=>({...prev, [name]: value}))
     }
 
-    const clearPaymentInfo = ()=> setPaymentInfo({amount: "", cryptoAddress: "", walletId: ""})
+    const clearPaymentInfo = ()=> setPaymentInfo({amount: "", cryptoAddress: "", walletId: "", currency: ""})
 
     const closeKeyboard = () => {
         setKbActive(false);
@@ -114,7 +122,33 @@ function PaymentSection({ coinData, active, togglePayment }: any) {
     };
 
     async function handlePayment() {
-        // handle top up functionality
+        paymentInfo["type"] = "crypto";
+        paymentInfo["crypto"] = paymentInfo.cryptoAddress;
+        paymentInfo["pin"] = pin.originalPin
+        try {
+
+            setLoader((prev: any)=>({...prev, withdraw: true}))
+            const url = APIROUTES.payForService;
+      
+            const {res, data} = await Fetch(url, {
+              method: "POST",
+              body:JSON.stringify(paymentInfo)
+            });
+            setLoader((prev: any)=>({...prev, withdraw: false}))
+      
+            if(!data.success){
+              notif.error(data.message)
+              return
+            }
+            
+            notif.success(data.message)
+            closeKeyboard()
+            await sleep(1.1)
+            window.location.reload()
+          } catch (e: any) {
+            setLoader((prev: any)=>({...prev, withdraw: false}))
+            notif.error(`An Error Occured:  ${e.message}`)
+          }
     }
 
     return (
@@ -128,42 +162,61 @@ function PaymentSection({ coinData, active, togglePayment }: any) {
                 {
                     steps.dialog === 1 ?
                         <div className="w-full h-auto flex  text-center flex-col items-center justify-center px-6">
-                            <p className="text-white-100 font-extrabold">{coinData.id} <span className="text-white-300"> :- </span> <span className="text-blue-300">{formatCurrency("USD", +paymentInfo.amount)}</span> </p>
-                            <br />
-                            <input type="text" value={paymentInfo.cryptoAddress} name="cryptoAddress" onChange={handleInput} placeholder='wallet_address' className="w-full px-4 py-3 text-white-200 rounded-[30px] bg-dark-100 " />
-                            <br />
-                            <input type="number" name="amount" onChange={handleInput} value={paymentInfo.amount} placeholder='amount' className="w-full px-4 py-3 text-white-200 rounded-[30px] bg-dark-100 " />
+                            
+                            <select
+                                onChange={(e)=>{
+                                    setPaymentInfo((prev: any)=> ({...prev, currency: e.target.value}))
+                                }}
+                                className="w-full px-4 py-3 bg-dark-100 text-white-100 rounded-[30px]"
+                            >
+                                <option value="">Select Account</option>
+                                {
+                                    walletInfo.accounts.map((wall: any)=>(
+                                        <option key={wall.currency} value={wall.currency}>{wall.currency}</option>
+                                    ))
+                                }
+                            </select>
                             <br />
                             <button
                                 className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] "
-                                onClick={() => toggleStep(2)}
+                                onClick={() => {
+                                    const {currency}  = paymentInfo;
+                                    if(currency === "") return notif.error("currency cant be empty")
+                                    toggleStep(2)
+                                }}
                             >
                                 Continue
                             </button>
-                            <br />
                         </div>
                         :
                         steps.dialog === 2 ?
                             <div className="w-full h-auto flex flex-col items-start justify-start px-6">
-                                <p className="text-white-200">
-                                    Balance:{" "}
-                                    <span className="font-extrabold text-blue-300">$300</span>{" "}
-                                </p>
+                                <p className="text-white-100 font-extrabold">{coinData.id} <span className="text-white-300"> :- </span> {paymentInfo.currency !== "" && <span className="text-blue-300">{formatCurrency(paymentInfo.currency, +paymentInfo.amount)}</span>} </p>
                                 <br />
-                                <select
-                                    name=""
-                                    id=""
-                                    className="w-full px-4 py-3 bg-dark-100 text-white-100 rounded-[30px]"
-                                >
-                                    <option value="">Select Account</option>
-                                </select>
+                                <input type="text" value={paymentInfo.cryptoAddress} name="cryptoAddress" onChange={handleInput} placeholder='wallet_address' className="w-full px-4 py-3 text-white-200 rounded-[30px] bg-dark-100 " />
                                 <br />
-                                <button
-                                    className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] "
-                                    onClick={() => toggleStep(3)}
-                                >
-                                    Continue
-                                </button>
+                                <input type="number" name="amount" onChange={handleInput} value={paymentInfo.amount} placeholder='amount' className="w-full px-4 py-3 text-white-200 rounded-[30px] bg-dark-100 " />
+                                <br />
+                                <div className="w-full flex items-center justify-between gap-10">
+                                    <button
+                                        className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-dark-300 rounded-[30px] "
+                                        onClick={() => toggleStep(1)}
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] "
+                                        onClick={() => {
+                                            const {amount, cryptoAddress}  = paymentInfo;
+                                            if(amount === "") return notif.error("amount cant be empty")
+                                            if(cryptoAddress === "") return notif.error("address cant be empty");
+                                            toggleStep(3)
+                                        }}
+                                    >
+                                        Continue
+                                    </button>
+                                </div>
+                                <br />
                                 <br />
                             </div>
                             :
@@ -172,12 +225,13 @@ function PaymentSection({ coinData, active, togglePayment }: any) {
                                     active={kbactive}
                                     toggleKeyboard={closeKeyboard}
                                     handler={handlePayment}
-                                    title="Booking Payment"
-                                    subTitle={formatCurrency("USD", +paymentInfo.amount)}
+                                    title="Crypto Purchase"
+                                    subTitle={formatCurrency(paymentInfo.currency, +paymentInfo.amount)}
                                 />
                                 :
                                 ""
                 }
+                { Loader.withdraw && <LoaderScreen full={true} /> }
             </Dialog>
         </Modal>
     );

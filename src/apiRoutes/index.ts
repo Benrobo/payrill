@@ -5,6 +5,7 @@ const APIROUTES = {
     register: `${BASE_URL}/auth/register`,
     getAllUsers: `${BASE_URL}/user/all`,
     transferFund: `${BASE_URL}/user/transfer/:receiverId`,
+    payForService: `${BASE_URL}/user/pay`,
     createWallet: `${BASE_URL}/wallet/create`,
     withdraw: `${BASE_URL}/wallet/withdraw`,
     getWalletInfo: `${BASE_URL}/wallet/get/:id`,
