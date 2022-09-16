@@ -18,6 +18,7 @@ const APIROUTES = {
     addToCart: `${BASE_URL}/cart/add`,
     payForCart: `${BASE_URL}/cart/pay`,
     removeFromCart: `${BASE_URL}/cart/remove`,
+    transferCart: `${BASE_URL}/cart/transfer`,
     createStore: `${BASE_URL}/store/create`,
     getAllStore: `${BASE_URL}/store/all`,
     getStoreBySubDomain1: `${BASE_URL}/store/byDomain/:subdomain`,

@@ -10,6 +10,7 @@ import {
   FaBitcoin,
   FaLongArrowAltDown,
   FaLongArrowAltLeft,
+  FaShoppingCart,
   FaUserTie,
 } from "react-icons/fa";
 import { GiHouse, GiWallet } from "react-icons/gi";
@@ -561,11 +562,20 @@ function MoreOptions({ active, handleActiveState }: any) {
         </div>
 
         <div id="box" className="flex flex-col items-center justify-center">
+          <Link to="/ecart">
+            <button className="px-4 py-4 flex flex-row items-center justify-center rounded-md bg-dark-200 text-[15px] ">
+              <FaShoppingCart className="text-[25px] " />
+            </button>
+            <span className="text-white-300 text-[15px] mt-4 ">E-Cart</span>
+          </Link>
+        </div>
+
+        {/* <div id="box" className="flex flex-col items-center justify-center">
           <button className="px-4 py-4 flex flex-row items-center justify-center rounded-md bg-dark-200 text-[15px] ">
             <RiHistoryFill className="text-[25px] " />
           </button>
           <span className="text-white-300 text-[15px] mt-4 ">History</span>
-        </div>
+        </div> */}
       </div>
     </Modal>
   );

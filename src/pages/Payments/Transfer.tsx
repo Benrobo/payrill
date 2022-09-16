@@ -43,7 +43,7 @@ const searchHistory = localStorage.getItem("payrill-search-history") === null ? 
 
 function Transfer() {
 
-    const {pin, clearPin, Data, Loader, Error, setError, setLoader, Currency, setData, clearStep} = useContext<any>(DataContext)
+    const {pin, clearPin, Data, Loader, Error, setError, setLoader, Currency, setData, clearStep, user} = useContext<any>(DataContext)
     const [activeState, setActiveState] = useState<ActiveStateProps>({
         dialog: false,
         keyboard: false
@@ -81,9 +81,10 @@ function Transfer() {
                 return setError((prev: any)=>({...prev, users: data.error}));
             }
 
-            const usersData = data.data;
+            const {id} = user;
+            const usersData = data.data.filter((user: any)=> user.id !== id);
             localStorage.setItem("payrill-users", JSON.stringify(usersData));
-
+            setError((prev: any)=>({...prev, users: null}));
         }   
         catch(e: any){
             setLoader((prev: any)=>({...prev, users: false}))

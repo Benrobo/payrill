@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { FaCartPlus, FaLongArrowAltLeft, FaTrashAlt } from "react-icons/fa";
+import { FaCartPlus, FaLongArrowAltLeft, FaShareAlt, FaShoppingCart, FaTrashAlt } from "react-icons/fa";
 import { HiArrowSmLeft } from "react-icons/hi";
 import { QrReader } from "react-qr-reader";
 import { Link, Navigate } from "react-router-dom";
@@ -27,10 +27,9 @@ const qrcodeconstraints = {
 const notif = new Notification(10000)
 
 
-function Scanner() {
+function Ecart() {
   const {Data, Loader, pin, clearPin, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
-  const [qrcodeId, setQrcodeId] = useState("");
-  const [steps, setSteps] = useState(2);
+  const [steps, setSteps] = useState(1);
   const [activeAlertBox, setActiveAlertBox] = useState(false);
   const [activeKeyboard, setActiveKeyboard] = useState(false);
   const [productInfo, setProducInfo] = useState<any>({})
@@ -39,20 +38,11 @@ function Scanner() {
   const toggleActiveAlertBox = () => setActiveAlertBox(!activeAlertBox);
   const toggleActiveKeyboard = () => {
     setActiveKeyboard(!activeKeyboard)
-    if(steps === 4) toggleSteps(2)
+    if(steps === 2) toggleSteps(1)
   };
   const [paymentData, setPaymentData] = useState({})
   const toggleSteps = (step: number) => setSteps(step);
   const [activeAlertMsg, setActiveAlertMsg] = useState("")
-
-  function handleQrcodeResult(result: any, error: any) {
-    if (!!result) {
-      setQrcodeId(result?.text);
-    }
-    if (!!error) {
-      // console.info(error);
-    }
-  }
 
   async function handleEcartPayment() {
     const payload = {
@@ -87,47 +77,17 @@ function Scanner() {
     return console.log(payload)
   }
 
-  useEffect(()=>{
-    // if(qrcodeId === "") return;
-    getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
-  },[qrcodeId])
-
-  async function getItemById(itemId: string){
-    try {
-
-      setLoader((prev: any)=>({...prev, getStoreItems: true}))
-      const url = APIROUTES.getStoreItemById.replace(":itemId", itemId);
-
-      const {res, data} = await Fetch(url, {
-        method: "GET",
-      });
-      setLoader((prev: any)=>({...prev, getStoreItems: false}))
-
-      if(!data.success){
-        setError((prev: any)=>({...prev, getStoreItems: data.message}))
-        return
-      }
-
-      setProducInfo(data.data?.item)
-      setError((prev: any)=>({...prev, getStoreItems: null}))
-
-    } catch (e: any) {
-      setLoader((prev: any)=>({...prev, getStoreItems: false}))
-      setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
-    }
-  }
-
   if(Loader.getStoreItems){
     return <LoaderScreenComp full={true}/>
   }
   
-  if(Error.getStoreItems !== null){
-    return <ErrorScreen full={true} text={Error.getStoreItems} />
-  }
+//   if(Error.getStoreItems !== null){
+//     return <ErrorScreen full={true} text={Error.getStoreItems} />
+//   }
 
-  if(!Loader.getStoreItems && Object.entries(productInfo).length === 0){
-    return <ErrorScreen full={true} text={"Oops!! looks like this item no longer exist or was not found."} size="md" />
-  }
+//   if(!Loader.getStoreItems && Object.entries(productInfo).length === 0){
+//     return <ErrorScreen full={true} text={"Oops!! looks like this item no longer exist or was not found."} size="md" />
+//   }
 
   return (
     <Layout>
@@ -135,21 +95,6 @@ function Scanner() {
         className={`w-full md:w-[500px] h-screen fixed top-0 bg-dark-100 z-[20] `}
       >
         {steps === 1 ? (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <QrReader
-              onResult={handleQrcodeResult}
-              constraints={qrcodeconstraints}
-              className="w-full"
-            />
-            <Link to="/dashboard">
-              <button className="px-6 py-3 bg-dark-200  font-extrabold text-white-100 rounded-[30px]">
-                Exist Scanner
-              </button>
-            </Link>
-          </div>
-        ) : steps === 2 ? (
-          <ProductInfo data={productInfo} toggleStep={toggleSteps} />
-        ) : steps === 3 ? (
           <CheckoutCont
             toggleStep={toggleSteps}
             toggleKeyboard={toggleActiveKeyboard}
@@ -157,7 +102,7 @@ function Scanner() {
             setActiveAlertMsg={setActiveAlertMsg}
             setEcartInfo={setEcartInfo}
           />
-        ) : steps === 4 ?
+        ) : steps === 2 ?
           <Keyboard
             active={activeKeyboard}
             title="Checkout Payment"
@@ -185,297 +130,8 @@ function Scanner() {
   );
 }
 
-export default Scanner;
+export default Ecart;
 
-function ProductInfo({ toggleStep, data }: any) {
-  const {Data, Loader, walletInfo, Error} = useContext<any>(DataContext)
-  const [quantity, setQuantity] = useState(1);
-  const [selectcart, setSelectCart] = useState(false)
-  const [ecartId, setEcartId] = useState("")
-  const [addtocart, setAddToCart] = useState(false)
-
-  const incQty = () => setQuantity((prev) => (prev += 1));
-  const decQty = () =>
-    setQuantity((prev) => (prev <= 1 ? (prev = 1) : (prev -= 1)));
-
-  const toggleEcart = ()=> setSelectCart(!selectcart)
-  const itemData = data;
-
-  async function handleAddToCart() {
-    if(ecartId === "") return notif.error("select an ecart to continue..")
-    try {
-      setAddToCart(true)
-
-      const url = APIROUTES.addToCart
-      const {res, data} = await Fetch(url, {
-        method: "POST",
-        body: JSON.stringify({
-          cartId: ecartId,
-          itemId: itemData.id,
-          quantity: quantity
-        })
-      });
-      setAddToCart(false)
-
-      if(!data.success){
-        notif.error(data.message)
-        return
-      }
-      // if item has been added to cart...
-      
-      notif.success(data.message)
-      toggleStep(3);
-    } catch (e: any) {
-      setAddToCart(false)
-      notif.error(`An Error Occured:  ${e.message}`)
-    }
-  }
-
-  if(Loader.getStoreItems){
-    return <LoaderScreenComp full={true}/>
-  }
-  
-  if(Error.getStoreItems !== null){
-    return <ErrorScreen full={true} text={Error.getStoreItems} />
-  }
-  
-  const productStyle = {
-    backgroundImage: `url("${data.item_image}")`,
-    backgroundSize: "contain",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  };
-
-  return (
-    <div className="w-full h-screen bg-dark-100 flex flex-col items-center justify-start">
-      <div
-        className="w-full relative  h-[350px] bg-white-100 "
-        style={{ ...productStyle }}
-      >
-        <div className="w-full absolute top-0 flex items-center justify-start px-4 py-3 ">
-          <button
-            onClick={() => toggleStep(1)}
-            className="px-3 py-2 rounded-md bg-dark-300"
-          >
-            <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
-          </button>
-          <button
-            onClick={toggleEcart}
-            className="p-3 scale-[.90] rounded-[50%] border-[2px] border-solid border-blue-300 bg-dark-700 absolute right-5 top-1 "
-          >
-            <FaCartPlus className="text-[15px] text-white-100 " />
-          </button>
-          <button
-            onClick={()=>toggleStep(3)}
-            className="px-4 py-3 scale-[.80] flex items-center justify-start gap-2 rounded-[30px] bg-blue-300 absolute right-[50px] top-1 "
-          >
-            View Cart <IoCartSharp className="text-[25px] text-white-100 " />
-          </button>
-        </div>
-      </div>
-      <div className="w-full flex items-center justify-between px-3 py-3">
-        <div className="right w-auto flex flex-col items-start justify-start">
-          <p className="text-white-200 font-extrabold capitalize ">{data.item_name}</p>
-        </div>
-        <div
-          id="left"
-          className="w-auto flex flex-row items-center justify-start bg-dark-300 p-1 rounded-md"
-        >
-          <button
-            className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-            onClick={decQty}
-          >
-            -
-          </button>
-          <button className="btn flex flex-col items-center justify-center px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 ">
-            {quantity}
-          </button>
-          <button
-            className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-            onClick={incQty}
-          >
-            +
-          </button>
-        </div>
-      </div>
-      <br />
-      <div className="w-full flex items-start justify-start px-3 ">
-        <p className="text-white-200 text-[15px] ">
-          {data.item_description}
-        </p>
-      </div>
-      <br />
-      <div className="w-full h-[80px] bg-dark-200 absolute bottom-0 left-0 flex flex-row items-center justify-between shadow-xl drop-shadow-xl shadow-dark-100 px-3 ">
-        <div
-          id="left"
-          className="w-auto flex flex-col items-start justify-start ml-2"
-        >
-          <p className="text-white-300 text-[12px] ">Price</p>
-          <p className="text-white-100 font-extrabold text-[25px] ">
-            {formatCurrency(data.item_currency, data.item_price)}
-          </p>
-        </div>
-        <br />
-        <button
-          className="px-7 py-3 rounded-[30px] bg-blue-300 font-extrabold text-white-100 transition-all scale-[.90] hover:scale-[.95] mr-5 "
-          onClick={()=>{
-            if(ecartId === ""){
-              toggleEcart()
-            }
-          }}
-        >
-          Add to Cart
-        </button>
-      </div>
-      {selectcart && <SelectEcart active={selectcart} handleAddToCart={handleAddToCart} setEcartId={setEcartId} toggleActive={toggleEcart} />}
-      {addtocart && <LoaderScreen text="Adding to e-cart.." /> }
-    </div>
-  );
-}
-
-function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
-  const {Data, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
-  const [cartname, setCartName] = useState("")
-  const [steps, setSteps] = useState(1)
-  const [ecartName, setEcartName] = useState("")
-
-  const toggleSteps = (step: number)=> setSteps(step)
-
-  useEffect(()=>{
-    fetchEcart()
-  },[])
-
-  function handleEcartId(e: any){
-    const dataset = e.target.dataset;
-    const value = e.target.value;
-    if(value === "") {
-      // if user selects an empty option, then set the previous ecart value to empty. ( FOR UI SAKE...)
-      setCartName(value)
-      return setEcartId(value)
-    };
-    const filter = Data.ecarts.filter((cart: any)=> cart.id === value)[0]
-    setCartName(filter.name)
-    setEcartId(value)
-  }
-
-  async function fetchEcart(){
-    try {
-      setLoader((prev: any)=>({...prev, getAllEcarts: true}))
-      const url = APIROUTES.getAllEcarts
-
-      const {res, data} = await Fetch(url, {
-        method: "GET",
-      });
-      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
-
-      if(!data.success){
-        notif.error(data.message)
-        return
-      }
-
-      setData((prev: any)=>({...prev, ecarts: data.data?.ecarts}))
-    } catch (e: any) {
-      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
-      notif.error(`An Error Occured:  ${e.message}`)
-    }
-  }
-
-  async function createEcart(){
-    if(cartname === "") return notif.error("e-cart name cant be empty")
-    try {
-
-      setLoader((prev: any)=>({...prev, createEcart: true}))
-      const url = APIROUTES.createEcart
-
-      const {res, data} = await Fetch(url, {
-        method: "POST",
-        body: JSON.stringify({name: cartname})
-      });
-      setLoader((prev: any)=>({...prev, createEcart: false}))
-
-      if(!data.success){
-        notif.error(data.message)
-        return
-      }
-
-      notif.success(data.message)
-      await sleep(1.1)
-      toggleSteps(1)
-      fetchEcart()
-
-    } catch (e: any) {
-      setLoader((prev: any)=>({...prev, createEcart: false}))
-      notif.error(`An Error Occured:  ${e.message}`)
-    }
-  }
-
-  // closeModal
-  function closeModal(){
-    setCartName("");
-    setEcartId("");
-    toggleActive()
-  }
-
-  return (
-    <Modal isActive={active} clickHandler={closeModal}>
-      <Dialog height={300}>
-        <div className="w-full flex flex-col items-center justify-center">
-          {/* <p className="text-white-100 font-extrabold">E-cart</p> */}
-          <p className="text-white-200 text-[15px] ">Select E-cart</p>
-        </div>
-        <br />
-        <div className="w-full flex flex-col items-start justify-start px-7">
-          {
-            steps === 1 ?
-              Loader.getAllEcarts ? 
-                <LoaderScreenComp size={"md"}  />
-                :
-                <>
-                  <p className="text-white-200 text-[15px] ">E-cart Name: <span className="text-white-100 font-extrabold">{cartname}</span> </p>
-                  <br />
-                  <select onChange={(e)=> {
-                    handleEcartId(e)
-                  }} className="w-full px-4 py-3 rounded-[30px] text-white-200 bg-dark-100">
-                    <option value="">
-                      {Data.ecarts.length === 0 ? "No ecarts available." : "Select e-cart"}
-                    </option>
-                    {
-                      Data.ecarts.filter((ecart: any)=> ecart.confirmed !== "true").map((cart: any)=>(
-                        <option value={cart.id} data-id={cart.id}>{cart.name}</option>
-                      ))
-                    }
-                  </select>
-                  <br />
-                  <button className="w-full px-4 py-3 rounded-[30px] bg-blue-300 flex items-center justify-center text-white-100 font-extrabold" onClick={handleAddToCart}>
-                    Continue
-                  </button>
-                  <small className="text-white-200 py-3">Dont have an e-cart? <span className="text-blue-200 font-extrabold cursor-pointer" onClick={()=> toggleSteps(2)}>create one</span> </small>
-                </>
-              :
-              <>
-                <br />
-                <input type="text" placeholder="cart name" onChange={(e)=> setCartName(e.target.value)} className="w-full px-4 py-3 rounded-[30px] text-white-200 bg-dark-100" />
-                <br />
-                <br />
-                <div className="w-full flex items-center justify-between gap-5">
-                  <button className="w-full px-4 py-3 scale-[.89] hover:scale-[1] rounded-[30px] bg-dark-200 flex items-center justify-center text-white-200" disabled={Loader.createEcart} onClick={()=> {
-                    toggleSteps(1)
-                    setCartName("")
-                  }}>
-                    Back
-                  </button>
-                  <button className="w-full px-2 py-3 rounded-[30px] bg-blue-300 transition-all scale-[.89] hover:scale-[1] flex items-center justify-center text-white-100 font-extrabold" onClick={createEcart} disabled={Loader.createEcart}>
-                    {Loader.createEcart ? <Spinner color="#fff" /> : "Create Cart" }
-                  </button>
-                </div>
-              </>
-          }
-        </div>
-        {/* <input type="text" className="w-full px-4 py-3 bg-dark-100" /> */}
-      </Dialog>
-    </Modal>
-  )
-}
 
 function CheckoutCont({
   toggleStep,
@@ -485,19 +141,27 @@ function CheckoutCont({
   setEcartInfo
 }: any) {
   
-  const {Data, Loader, pin, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
+  const {Data, Loader, user, pin, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [cartId, setCartId] = useState("")
   const [totalPayment, setTotalPayment] = useState({
     amount: 0,
     currency: ""
   })
+  const [ecartId, setEcartId] = useState("")
   const [tempCheckoutInfo, setTempCheckoutInfo] = useState([])
   const [selectedEcart, setSelectedEcart] = useState<any>({})
+  const [activesharecart, setActiveShareCart] = useState(false)
+  const [activeCartType, setActiveCartType] = useState("share");
+  const [to, setTo] = useState("")
+  const [iskeyboardactive, setIsKeyboardActive] = useState(false)
 
   useEffect(()=>{
     fetchEcart()
-    // console.log(Data.ecarts)
   },[])
+
+  useEffect(()=>{
+    if(activesharecart) fetchAllUsers()
+  },[activesharecart])
   
   useEffect(()=>{
     if(cartId === "") return;
@@ -507,13 +171,17 @@ function CheckoutCont({
     setSelectedEcart($ecart)
   },[cartId])
 
+  const toggleShareCart = () => setActiveShareCart(!activesharecart)
+  const toggleTransferKeyboard = ()=> setIsKeyboardActive(!iskeyboardactive)
+
+
   async function handleCheckout() {
     if(selectedEcart.paid === "true" && selectedEcart.confirmed === "false"){
       setActiveAlertMsg("Payment has been made for this ecart.")
       toggleAtiveAlertBox()
       return
     }
-    toggleStep(4);
+    toggleStep(2);
     toggleKeyboard(true);
   }
 
@@ -538,6 +206,30 @@ function CheckoutCont({
       notif.error(`An Error Occured:  ${e.message}`)
     }
   }
+
+  async function fetchAllUsers(){
+    try{
+        const url = APIROUTES.getAllUsers;
+        setLoader((prev: any)=>({...prev, users: true}))
+        const {res, data} = await Fetch(url, {
+            method: "GET"
+        });
+        setLoader((prev: any)=>({...prev, users: false}))
+
+        if(!data.success){
+            return setError((prev: any)=>({...prev, users: data.message}));
+        }
+
+        const {id} = user;
+        const usersData = data.data.filter((user: any)=> user.id !== id);
+        setData((prev: any)=>({...prev, users: usersData}))
+        setError((prev: any)=>({...prev, users: null}));
+    }   
+    catch(e: any){
+        setLoader((prev: any)=>({...prev, users: false}))
+        setError((prev: any)=>({...prev, users: e.message}));
+    }
+}
 
   async function getEcartItems(cartId: string){
     try {
@@ -574,6 +266,44 @@ function CheckoutCont({
     setTotalPayment({amount: totalAmount, currency})
   }
 
+  async function handleEcartSharingandReceiving(){
+
+    if(activeCartType === "share"){
+        if(pin.originalPin === "") return
+        if(ecartId === "") return notif.error("select ecart");
+        if(to === "") return notif.error("select a user to transfer to.")
+        // handle share
+        try{
+            const url = APIROUTES.transferCart;
+            setLoader((prev: any)=>({...prev, transfer: true}))
+            const {res, data} = await Fetch(url, {
+                method: "POST",
+                body: JSON.stringify({
+                    pin: pin.originalPin,
+                    to,
+                    cartId: ecartId
+                })
+            });
+            setLoader((prev: any)=>({...prev, transfer: false}))
+    
+            if(!data.success){
+                return notif.error(data.message)
+            }
+    
+            notif.success(data.message)
+            window.location.reload()
+        }   
+        catch(e: any){
+            setLoader((prev: any)=>({...prev, users: false}))
+            notif.error(`An error occured: ${e.message}`)
+        }
+    }
+    if(activeCartType === "receive"){
+        // handle receive
+    }
+    
+  }
+
   if(Loader.getAllEcarts){
     return <LoaderScreenComp full={true} />
   }
@@ -585,12 +315,14 @@ function CheckoutCont({
   return (
     <div className="w-full flex flex-col items-center justify-center">
       <div className="relative w-full flex items-center justify-start px-4 py-3 ">
-        <button
-          onClick={() => toggleStep(1)}
-          className="px-3 py-2 rounded-md bg-dark-300"
-        >
-          <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
-        </button>
+        <Link to="/dashboard">
+            <button
+            onClick={() => toggleStep(1)}
+            className="px-3 py-2 rounded-md bg-dark-300"
+            >
+            <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
+            </button>
+        </Link>
         <p className="text-white-100 text-[18px] ml-5 font-extrabold ">
           Checkout 
           {
@@ -616,6 +348,12 @@ function CheckoutCont({
               <option value="">No ecarts available.</option>
           }
         </select>
+        <button
+            onClick={toggleShareCart}
+            className="absolute top-6 right-[200px] px-3 py-2 rounded-md text-[12px] font-extrabold bg-blue-300"
+        >
+            <FaShareAlt className="text-[15px] text-white-100 " />
+        </button>
       </div>
       <br />
       <br />
@@ -653,6 +391,85 @@ function CheckoutCont({
           Checkout & Pay Now
         </button>
       </div>}
+
+
+      {
+        activesharecart &&
+        <Modal isActive={activesharecart} clickHandler={()=>{
+            toggleShareCart()
+            setEcartId("")
+        }}>
+            <div className="w-full flex flex-col items-center justify-center">
+                <div className="w-[350px] h-auto p-4 rounded-md bg-dark-200 ">
+                    <div className="w-full flex flex-col items-center justify-center">
+                        <p className="text-white-100 font-extrabold">Share E-cart.</p>
+                    </div>
+                    <br />
+                    { 
+                        activeCartType === "share" ?
+                        <>
+                            <select name="" id="" className="w-full px-4 py-3 text-[12px] rounded-[30px] bg-dark-100 text-white-100" onChange={(e: any)=>{
+                                const value = e.target.value;
+                                if(value === "") return;
+                                setTo(value);
+                            }}>
+                                <option value="">Select Users.</option>
+                                {
+                                    Loader.users ?
+                                        <option value="">Loading...</option>
+                                        :
+                                    Error.users !== null ?
+                                        <option value="">{Error.users}</option>
+                                        :
+                                    Data.users.length > 0 ?
+                                    Data.users.map((data: any)=>(
+                                        <option value={data.id} key={data.id}>@{data.username}</option>
+                                    ))
+                                    :
+                                    <option value="">No users available.</option>
+                                }
+                            </select>
+                            <br />
+                            <br />
+                            <select name="" id="" className="w-full px-4 py-3 text-[12px] rounded-[30px] bg-dark-100 text-white-100" onChange={(e: any)=>{
+                                const value = e.target.value;
+                                if(value === "") return;
+                                setEcartId(value);
+                            }}>
+                                <option value="">Select E-carts.</option>
+                                {
+                                    Data.ecarts.length > 0 ?
+                                    Data.ecarts.filter((ecart: any)=> ecart.confirmed === "false").map((data: any)=>(
+                                        <option value={data.id} key={data.id}>{data.name}</option>
+                                    ))
+                                    :
+                                    <option value="">No ecarts available.</option>
+                                }
+                            </select>
+                        </>
+                        :
+                        <input type="text" className="w-full px-4 py-3 bg-dark-100 text-white-100 font-extrabold rounded-[30px] text-[13px] " value={activeCartType === "receive" ? ecartId : ""} onChange={(e: any)=> {
+                            if(activeCartType === "receive") setEcartId(e.target.value)
+                        }} placeholder="ecart id" />
+                    }
+                    <br />
+                    <button className="px-4 py-3 rounded-[30px] mt-5 w-full flex flex-col items-center justify-center font-vextrabold bg-blue-300" onClick={()=> toggleTransferKeyboard()}>
+                        {activeCartType === "share" ? "Share Ecart" : "Receive Ecart"}
+                    </button>
+                    <br />
+                    {
+                        activeCartType === "share" ?
+                        <p className="text-white-200 font-extrabold text-[12px] w-full ">recieve <span className="text-blue-200 cursor-pointer " onClick={()=> setActiveCartType("receive")}>E-Carts</span> .</p>
+                        :
+                        <p className="text-white-200 font-extrabold text-[12px] w-full ">share <span className="text-blue-200 cursor-pointer " onClick={()=> setActiveCartType("share")}>E-Carts</span> .</p>
+                    }
+
+                </div>
+                { iskeyboardactive && <Keyboard title="cart transfer" active={iskeyboardactive} handler={handleEcartSharingandReceiving} toggleKeyboard={toggleTransferKeyboard} /> }
+                { Loader.transfer && <LoaderScreen /> }
+            </div>
+        </Modal>
+      }
     </div>
   );
 }
@@ -745,7 +562,8 @@ function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPaym
   
   const itemData = data;
 
-  async function updateItemQuantity(quantity: any){
+  async function updateItemQuantity(item_quantity: any){
+    // return console.log({item_quantity})
     try {
 
       setLoader((prev: any)=>({...prev, updatCartItems: true}))
@@ -755,7 +573,7 @@ function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPaym
         body: JSON.stringify({
           cartId: itemData.ecart_id,
           itemId: itemData.item_id,
-          quantity,
+          quantity: item_quantity,
         })
       });
       setLoader((prev: any)=>({...prev, updatCartItems: false}))
@@ -766,6 +584,7 @@ function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPaym
       }
 
       getEcartItems(itemData.ecart_id)
+
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, updatCartItems: false}))
       notif.error(`An Error Occured:  ${e.message}`)
@@ -814,7 +633,7 @@ function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPaym
           -
         </button>
         <button className="btn flex flex-col items-center justify-center px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 ">
-          {quantity}
+          {data.item_quantity}
         </button>
         <button
           className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "

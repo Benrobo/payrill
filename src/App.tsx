@@ -10,6 +10,7 @@ import HotelBooking from './pages/Bookings/Hotel'
 import CryptoCurrencies from './pages/Crypto/CryptoCurrencies'
 import Dashboard from './pages/Dashboard'
 import OrgDashboard from './pages/Dashboard/OrgDashboard'
+import Ecart from './pages/Ecart/Ecart'
 import TopUp from './pages/Payments/TopUp'
 import Transfer from './pages/Payments/Transfer'
 import Withdraw from './pages/Payments/Withdraw'
@@ -50,6 +51,9 @@ function App() {
             } />
             <Route path='/booking' element={
               <ProtectedRoute children={<HotelBooking />} />
+            } />
+            <Route path='/ecart' element={
+              <ProtectedRoute children={<Ecart />} />
             } />
             <Route path='/crypto' element={
               <ProtectedRoute children={<CryptoCurrencies />} />
