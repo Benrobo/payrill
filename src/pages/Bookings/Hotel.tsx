@@ -101,6 +101,7 @@ function HotelBooking() {
           <PaymentSection
             active={continuePayment}
             amount={selectedData?.price}
+            data={selectedData}
             togglePayment={toggleContinuePayment}
           />
         )}
@@ -141,7 +142,7 @@ function SelectedHotel({
           <div className="w-full flex flex-col items-start justify-start">
             <p className="text-white-300 font-extrabold">Price</p>
             <p className="text-white-100 font-extrabold">
-              {formatCurrency("USD", data.price)}
+              {formatCurrency(data.currency, +data.price)}
             </p>
           </div>
           <button
@@ -157,12 +158,12 @@ function SelectedHotel({
   );
 }
 
-function PaymentSection({ active, amount, togglePayment }: any) {
+function PaymentSection({ active, data, amount, togglePayment }: any) {
   const {Loader, walletInfo,setLoader, pin, steps, setSteps, clearStep, clearPin } = useContext<any>(DataContext);
   const [kbactive, setKbActive] = useState(true);
   const [paymentInfo, setPaymentInfo] = useState<any>({
-    amount: "",
-    currency: ""
+    currency: "",
+    amount: data.price
   })
 
   const toggleStep = (step: number) =>
@@ -180,17 +181,12 @@ function PaymentSection({ active, amount, togglePayment }: any) {
     clearStep("dialog", 1);
   };
 
-  
-  const handleInput = (e: any)=>{
-    const value = e.target.value;
-    const name = e.target.name;
-    setPaymentInfo((prev: any)=>({...prev, [name]: value}))
-  }
 
   async function handlePayment() {
     paymentInfo["type"] = "hotel-booking";
     // paymentInfo["crypto"] = paymentInfo.cryptoAddress;
     paymentInfo["pin"] = pin.originalPin
+    paymentInfo["amount"] = amount;
     try {
       setLoader((prev: any)=>({...prev, withdraw: true}))
       const url = APIROUTES.payForService;
@@ -236,7 +232,7 @@ function PaymentSection({ active, amount, togglePayment }: any) {
                 >
                     <option value="">Select Account</option>
                     {
-                        walletInfo.accounts.map((wall: any)=>(
+                        walletInfo?.accounts.map((wall: any)=>(
                             <option key={wall.currency} value={wall.currency}>{wall.currency}</option>
                         ))
                     }
@@ -255,41 +251,15 @@ function PaymentSection({ active, amount, togglePayment }: any) {
             </div>
             :
             steps.dialog === 2 ?
-                <div className="w-full h-auto flex flex-col items-start justify-start px-6">
-                    <input type="number" name="amount" onChange={handleInput} value={paymentInfo.amount} placeholder='amount' className="w-full px-4 py-3 text-white-200 rounded-[30px] bg-dark-100 " />
-                    <br />
-                    <div className="w-full flex items-center justify-between gap-10">
-                        <button
-                            className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-dark-300 rounded-[30px] "
-                            onClick={() => toggleStep(1)}
-                        >
-                            Back
-                        </button>
-                        <button
-                            className="w-full px-4 py-3 flex flex-col items-center justify-center font-extrabold text-white-100 bg-blue-300 rounded-[30px] "
-                            onClick={() => {
-                                const {amount}  = paymentInfo;
-                                if(amount === "") return notif.error("amount cant be empty")
-                                toggleStep(3)
-                            }}
-                        >
-                            Continue
-                        </button>
-                    </div>
-                    <br />
-                    <br />
-                </div>
-                  :
-                steps.dialog === 3 ?
-                  <Keyboard
-                      active={kbactive}
-                      toggleKeyboard={closeKeyboard}
-                      handler={handlePayment}
-                      title="Hotel Booking"
-                      subTitle={formatCurrency(paymentInfo.currency, +paymentInfo.amount)}
-                  />
-                  :
-                  ""
+              <Keyboard
+                  active={kbactive}
+                  toggleKeyboard={closeKeyboard}
+                  handler={handlePayment}
+                  title="Hotel Booking"
+                  subTitle={`hotel booking for  ${formatCurrency(paymentInfo.currency, +paymentInfo.amount)} `}
+              />
+              :
+              ""
         }
         { Loader.withdraw && <LoaderScreen full={true} /> }
       </Dialog>

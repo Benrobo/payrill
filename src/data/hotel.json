@@ -12,6 +12,7 @@
         },
         "cuisine_type": "Asian",
         "price": "789",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "5:30 pm - 11:00 pm",
           "Tuesday": "5:30 pm - 12:00 am",
@@ -54,6 +55,7 @@
         },
         "cuisine_type": "Pizza",
         "price": "1589",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "5:30 pm - 11:00 pm",
           "Tuesday": "5:30 pm - 11:00 pm",
@@ -96,6 +98,7 @@
         },
         "cuisine_type": "Asian",
         "price": "389",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "11:30 am - 2:00 am",
           "Tuesday": "11:30 am - 2:00 am",
@@ -180,6 +183,7 @@
         },
         "cuisine_type": "Pizza",
         "price": "989",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "11:00 am - 12:00 am",
           "Tuesday": "11:00 am - 12:00 am",
@@ -222,6 +226,7 @@
         },
         "cuisine_type": "American",
         "price": "689",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "Closed",
           "Tuesday": "12:00 pm - 10:00 pm",
@@ -264,6 +269,7 @@
         },
         "cuisine_type": "American",
         "price": "500",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "11:30 am - 10:00 pm",
           "Tuesday": "Closed",
@@ -306,6 +312,7 @@
         },
         "cuisine_type": "American",
         "price": "800",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "11:30 am - 3:00 pm, 5:30 pm - 11:00 pm",
           "Tuesday": "11:30 am - 3:00 pm, 5:30 pm - 11:00 pm",
@@ -348,6 +355,7 @@
         },
         "cuisine_type": "Asian",
         "price": "356",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "5:00 pm - 10:00 pm",
           "Tuesday": "5:00 pm - 10:00 pm",
@@ -390,6 +398,7 @@
         },
         "cuisine_type": "Mexican",
         "price": "954",
+        "currency": "USD",
         "operating_hours": {
           "Monday": "5:00 pm - 12:00 am",
           "Tuesday": "5:00 pm - 12:00 am",

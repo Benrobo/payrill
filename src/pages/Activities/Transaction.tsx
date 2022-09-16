@@ -45,6 +45,7 @@ function TransactionActivities() {
 
   useEffect(()=>{
     fetchTransactions()
+    fetchAllUsers()
   },[])
 
   async function fetchTransactions(){
@@ -66,6 +67,30 @@ function TransactionActivities() {
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, transactions: false}))
       setError((prev: any)=>({...prev, transactions: ` An Error occured: ${e.message} `}))
+    }
+  }
+
+  
+  async function fetchAllUsers(){
+    try{
+      const url = APIROUTES.getAllUsers;
+      setLoader((prev: any)=>({...prev, users: true}))
+      const {res, data} = await Fetch(url, {
+          method: "GET"
+      });
+      setLoader((prev: any)=>({...prev, users: false}))
+
+      if(!data.success){
+          return setError((prev: any)=>({...prev, users: data.error}));
+      }
+
+      const usersData = data.data;
+      localStorage.setItem("payrill-users", JSON.stringify(usersData));
+      setData((prev: any)=>({...prev, users: data.data}));
+    }   
+    catch(e: any){
+      setLoader((prev: any)=>({...prev, users: false}))
+      setError((prev: any)=>({...prev, users: e.message}));
     }
   }
 
@@ -131,7 +156,6 @@ function TransactionLists({ handleActiveState }: any) {
     }
     return _result;
   }
-
 
   return (
     <div
@@ -214,33 +238,10 @@ function ViewTransaction({ active, transactionId, setActiveState, handleActiveSt
   };
 
   useEffect(()=>{
-    fetchAllUsers()
-
     filterTransaction()
   },[])
 
-  async function fetchAllUsers(){
-    try{
-      const url = APIROUTES.getAllUsers;
-      setLoader((prev: any)=>({...prev, users: true}))
-      const {res, data} = await Fetch(url, {
-          method: "GET"
-      });
-      setLoader((prev: any)=>({...prev, users: false}))
 
-      if(!data.success){
-          return setError((prev: any)=>({...prev, users: data.error}));
-      }
-
-      const usersData = data.data;
-      localStorage.setItem("payrill-users", JSON.stringify(usersData));
-      setData((prev: any)=>({...prev, users: data.data}));
-    }   
-    catch(e: any){
-      setLoader((prev: any)=>({...prev, users: false}))
-      setError((prev: any)=>({...prev, users: e.message}));
-    }
-  }
   
   if(Loader.users){
     return <LoaderScreenComp full={true} />

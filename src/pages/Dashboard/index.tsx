@@ -156,7 +156,7 @@ function Dashboard() {
           isActive={activeState.switchCard}
         />
         <br />
-        <LastTransactions handleActiveState={handleActiveState} />
+        {/* <LastTransactions handleActiveState={handleActiveState} /> */}
 
         <ViewTransaction
           handleActiveState={handleActiveState}

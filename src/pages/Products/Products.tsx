@@ -365,19 +365,19 @@ function SelectedProduct({toggleProduct, data}: any){
       return
     }
 
-    const payload = {
-      name: itemname, 
-      description:itemDesc, 
-      price: itemPrice, 
-      quantity: itemQty,
-      image: itemImage, 
-    }
+    // const payload = {
+    //   name: itemname, 
+    //   description:itemDesc, 
+    //   price: itemPrice, 
+    //   quantity: itemQty,
+    //   image: itemImage, 
+    // }
 
     try {
-      setLoader((prev: any)=>({...prev, updateStoreItems: true}))
+      // setLoader((prev: any)=>({...prev, updateStoreItems: true}))
       const url = APIROUTES.updateItem.replace(":item_id", id)
       const payload = {
-        name: itemName,
+        name: itemname,
         storeId,
         price: itemPrice,
         quantity: itemQty,
@@ -385,7 +385,7 @@ function SelectedProduct({toggleProduct, data}: any){
         description: itemDesc,
         currency: userCurrency
       }
-
+      
       const {res, data} = await Fetch(url, {
         method: "POST",
         body: JSON.stringify(payload)
