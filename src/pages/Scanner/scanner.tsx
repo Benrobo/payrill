@@ -30,7 +30,7 @@ const notif = new Notification(10000)
 function Scanner() {
   const {Data, Loader, pin, clearPin, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
   const [qrcodeId, setQrcodeId] = useState("");
-  const [steps, setSteps] = useState(2);
+  const [steps, setSteps] = useState(1);
   const [activeAlertBox, setActiveAlertBox] = useState(false);
   const [activeKeyboard, setActiveKeyboard] = useState(false);
   const [productInfo, setProducInfo] = useState<any>({})
@@ -88,8 +88,10 @@ function Scanner() {
   }
 
   useEffect(()=>{
-    // if(qrcodeId === "") return;
-    getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
+    if(qrcodeId === "") return;
+    console.log(qrcodeId, steps)
+    getItemById(qrcodeId)
+    // getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
   },[qrcodeId])
 
   async function getItemById(itemId: string){
@@ -110,7 +112,7 @@ function Scanner() {
 
       setProducInfo(data.data?.item)
       setError((prev: any)=>({...prev, getStoreItems: null}))
-
+      toggleSteps(2)
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, getStoreItems: false}))
       setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
@@ -125,7 +127,7 @@ function Scanner() {
     return <ErrorScreen full={true} text={Error.getStoreItems} />
   }
 
-  if(!Loader.getStoreItems && Object.entries(productInfo).length === 0){
+  if(qrcodeId !== "" && !Loader.getStoreItems && Object.entries(productInfo).length === 0){
     return <ErrorScreen full={true} text={"Oops!! looks like this item no longer exist or was not found."} size="md" />
   }
 
@@ -134,7 +136,7 @@ function Scanner() {
       <div
         className={`w-full md:w-[500px] h-screen fixed top-0 bg-dark-100 z-[20] `}
       >
-        {steps === 1 ? (
+        {steps === 1 && qrcodeId === "" ? (
           <div className="w-full h-full flex flex-col items-center justify-center">
             <QrReader
               onResult={handleQrcodeResult}
@@ -143,7 +145,7 @@ function Scanner() {
             />
             <Link to="/dashboard">
               <button className="px-6 py-3 bg-dark-200  font-extrabold text-white-100 rounded-[30px]">
-                Exist Scanner
+                Exit Scanner
               </button>
             </Link>
           </div>
@@ -253,12 +255,17 @@ function ProductInfo({ toggleStep, data }: any) {
         style={{ ...productStyle }}
       >
         <div className="w-full absolute top-0 flex items-center justify-start px-4 py-3 ">
-          <button
-            onClick={() => toggleStep(1)}
-            className="px-3 py-2 rounded-md bg-dark-300"
-          >
-            <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
-          </button>
+          <Link to="/dashboard">
+            <button
+              onClick={() => {
+                // window.location.reload()
+                toggleStep(1) 
+              }}
+              className="px-3 py-2 rounded-md bg-dark-300"
+            >
+              <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
+            </button>
+          </Link>
           <button
             onClick={toggleEcart}
             className="p-3 scale-[.90] rounded-[50%] border-[2px] border-solid border-blue-300 bg-dark-700 absolute right-5 top-1 "
