@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { FaCartPlus, FaLongArrowAltLeft, FaTrashAlt } from "react-icons/fa";
+import { FaCartPlus, FaLongArrowAltLeft, FaQrcode, FaTrashAlt } from "react-icons/fa";
 import { HiArrowSmLeft } from "react-icons/hi";
 import { QrReader } from "react-qr-reader";
 import { Link, Navigate } from "react-router-dom";
@@ -18,7 +18,8 @@ import APIROUTES from "../../apiRoutes";
 import Fetch from "../../utils/fetch";
 import { ErrorScreen } from "../../components/UI-COMP/error";
 import { IoCartSharp } from "react-icons/io5";
-import { data } from "autoprefixer";
+import { IoIosQrScanner, IoMdQrScanner } from "react-icons/io";
+
 
 const qrcodeconstraints = {
   facingMode: "",
@@ -96,6 +97,13 @@ function Scanner() {
     // getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
   },[qrcodeId])
 
+  useEffect(()=>{
+    let videoId = document.querySelector("#qrcode-video") as any;
+    videoId.width = "100%";
+    videoId.height = "100%"
+    console.log(videoId)
+  },[])
+
   async function getItemById(itemId: string){
     try {
 
@@ -133,23 +141,31 @@ function Scanner() {
     return <ErrorScreen full={true} text={"Oops!! looks like this item no longer exist or was not found."} size="md" />
   }
 
+
   return (
     <Layout>
       <div
         className={`w-full md:w-[500px] h-screen fixed top-0 bg-dark-100 z-[20] `}
       >
         {steps === 1 && qrcodeId === "" ? (
-          <div className="w-full h-full flex flex-col items-center justify-center">
+          <div className="w-full bg-white-100 h-screen relative flex flex-col items-center justify-center">
             <QrReader
               onResult={handleQrcodeResult}
               constraints={qrcodeconstraints}
-              className="w-full"
+              className="w-[100%] h-[100%] absolute top-0 left-0  "
+              videoId="qrcode-video"
+              
             />
-            <Link to="/dashboard">
-              <button className="px-6 py-3 bg-dark-200  font-extrabold text-white-100 rounded-[30px]">
-                Exit Scanner
-              </button>
-            </Link>
+            <div className="w-full flex flex-col items-center justify-center absolute top-[17%]">
+              <IoIosQrScanner className=" p-1 text-[290px] text-blue-200 " />
+            </div>
+            <div className="w-full absolute bottom-0 py-2 flex flex-col items-center justify-center">
+              <Link to="/dashboard">
+                <button className=" px-6 py-3 bg-dark-200  font-extrabold text-white-100 rounded-[30px]">
+                  Exit Scanner
+                </button>
+              </Link>
+            </div>
           </div>
         ) : steps === 2 ? (
           <ProductInfo data={productInfo} toggleStep={toggleSteps} />
