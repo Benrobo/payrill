@@ -160,7 +160,7 @@ function TransactionLists({ handleActiveState }: any) {
   return (
     <div
       id="transaction-list"
-      className="w-full flex flex-col items-center justify-center gap-5"
+      className="w-full px-4 md:px-0 flex flex-col items-center justify-center gap-5"
     >
       {
         Data.transactions.length > 0 ?

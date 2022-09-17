@@ -607,6 +607,7 @@ function AlertContainer({
           </div>
         </div>
       </div>
+      { Loader.refundCart && <LoaderScreen full={true} /> }
     </Modal>
   );
 }

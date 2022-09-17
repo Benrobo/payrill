@@ -4,6 +4,7 @@ import { NetworkDataType, NetworkErrorType, NetworkLoadingType, ProviderType, Pi
 import APIROUTES from "../apiRoutes";
 import Fetch from "../utils/fetch";
 import Notification from "../utils/toast";
+import { sleep } from "../utils";
 
 
 const DataContext = createContext({})
@@ -227,6 +228,8 @@ export function DataContextProvider({ children }: any) {
             }
 
             notif.success(data.message);
+            await sleep(1.1)
+            window.location.reload()
 
         } catch (e: any) {
             setLoader((prev: any)=>({...prev, refundCart: false}))
