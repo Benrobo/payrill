@@ -530,7 +530,7 @@ function MoreOptions({ active, handleActiveState }: any) {
         className="absolute scale-[.60] top-4 right-2 px-4 py-4 flex flex-row items-center justify-center rounded-[50%] bg-red-900 text-[15px] "
         onClick={() => handleActiveState("moreOptions")}
       >
-        <CgClose className="text-[25px] text-red-200 " />
+        <CgClose className="text-[25px] text-white-100 " />
       </button>
       <div className="relative w-[280px] flex flex-wrap flex-row items-center p-5 rounded-md bg-dark-300 gap-5">
 

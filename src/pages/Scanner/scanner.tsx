@@ -43,7 +43,8 @@ function Scanner() {
   };
   const [paymentData, setPaymentData] = useState({})
   const toggleSteps = (step: number) => setSteps(step);
-  const [activeAlertMsg, setActiveAlertMsg] = useState("")
+  const [activeAlertMsg, setActiveAlertMsg] = useState("");
+  const [paymentTrackingId, setPaymentTrackingId] = useState("");
 
   function handleQrcodeResult(result: any, error: any) {
     if (!!result) {
@@ -79,6 +80,7 @@ function Scanner() {
       notif.success(data.message);
       clearPin()
       setPaymentData(data.data)
+      setPaymentTrackingId(data.data.ecartId)
       toggleActiveAlertBox();
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, payForCart: false}))
@@ -89,7 +91,7 @@ function Scanner() {
 
   useEffect(()=>{
     if(qrcodeId === "") return;
-    console.log(qrcodeId, steps)
+    // console.log(qrcodeId, steps)
     getItemById(qrcodeId)
     // getItemById("d26d5203-5448-4d83-bc82-0d2ccb4e516f")
   },[qrcodeId])
@@ -151,15 +153,7 @@ function Scanner() {
           </div>
         ) : steps === 2 ? (
           <ProductInfo data={productInfo} toggleStep={toggleSteps} />
-        ) : steps === 3 ? (
-          <CheckoutCont
-            toggleStep={toggleSteps}
-            toggleKeyboard={toggleActiveKeyboard}
-            toggleAtiveAlertBox={toggleActiveAlertBox}
-            setActiveAlertMsg={setActiveAlertMsg}
-            setEcartInfo={setEcartInfo}
-          />
-        ) : steps === 4 ?
+        ) : steps === 3 ?
           <Keyboard
             active={activeKeyboard}
             title="Checkout Payment"
@@ -178,7 +172,7 @@ function Scanner() {
           toggleActive={toggleActiveAlertBox}
           paymentData={paymentData}
           message={activeAlertMsg}
-          ecartInfo={ecartInfo}
+          paymentTrackingId={paymentTrackingId}
         />
       )}
 
@@ -226,7 +220,7 @@ function ProductInfo({ toggleStep, data }: any) {
       // if item has been added to cart...
       
       notif.success(data.message)
-      toggleStep(3);
+      window.location.href = "/ecart"
     } catch (e: any) {
       setAddToCart(false)
       notif.error(`An Error Occured:  ${e.message}`)
@@ -272,12 +266,13 @@ function ProductInfo({ toggleStep, data }: any) {
           >
             <FaCartPlus className="text-[15px] text-white-100 " />
           </button>
-          <button
-            onClick={()=>toggleStep(3)}
-            className="px-4 py-3 scale-[.80] flex items-center justify-start gap-2 rounded-[30px] bg-blue-300 absolute right-[50px] top-1 "
-          >
-            View Cart <IoCartSharp className="text-[25px] text-white-100 " />
-          </button>
+          <Link to="/ecart">
+            <button
+              className="px-4 py-3 scale-[.80] flex items-center justify-start gap-2 rounded-[30px] bg-blue-300 absolute right-[50px] top-1 "
+            >
+              View Cart <IoCartSharp className="text-[25px] text-white-100 " />
+            </button>
+          </Link>
         </div>
       </div>
       <div className="w-full flex items-center justify-between px-3 py-3">
@@ -484,68 +479,33 @@ function SelectEcart({active, toggleActive, setEcartId, handleAddToCart}: any){
   )
 }
 
-function CheckoutCont({
-  toggleStep,
-  toggleAtiveAlertBox,
-  setActiveAlertMsg,
+function AlertContainer({
+  active,
+  toggleActive,
   toggleKeyboard,
-  setEcartInfo
+  toggleStep,
+  paymentData,
+  message,
+  paymentTrackingId
 }: any) {
-  
-  const {Data, Loader, pin, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
-  const [cartId, setCartId] = useState("")
-  const [totalPayment, setTotalPayment] = useState({
-    amount: 0,
-    currency: ""
-  })
-  const [tempCheckoutInfo, setTempCheckoutInfo] = useState([])
-  const [selectedEcart, setSelectedEcart] = useState<any>({})
+  async function handleRefund() {}
 
-  useEffect(()=>{
-    fetchEcart()
-    // console.log(Data.ecarts)
-  },[])
-  
-  useEffect(()=>{
-    if(cartId === "") return;
-    getEcartItems(cartId)
-    
-    const $ecart = Data.ecarts.filter((ecart: any)=> ecart.id === cartId)[0]
-    setSelectedEcart($ecart)
-  },[cartId])
+  const {Data, Loader, pin, clearPin, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext);
+  const [ecartInfo, setEcartInfo] = useState<any>({})
 
-  async function handleCheckout() {
-    if(selectedEcart.paid === "true" && selectedEcart.confirmed === "false"){
-      setActiveAlertMsg("Payment has been made for this ecart.")
-      toggleAtiveAlertBox()
-      return
-    }
-    toggleStep(4);
-    toggleKeyboard(true);
+  function handleCloseModal() {
+    const confirm = window.confirm("Are you sure about this action?");
+    if (!confirm) return;
+    toggleActive();
+    toggleKeyboard();
+    toggleStep(2);
   }
 
-  async function fetchEcart(){
-    try {
-      setLoader((prev: any)=>({...prev, getAllEcarts: true}))
-      const url = APIROUTES.getAllEcarts
-
-      const {res, data} = await Fetch(url, {
-        method: "GET",
-      });
-      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
-
-      if(!data.success){
-        notif.error(data.message)
-        return
-      }
-
-      setData((prev: any)=>({...prev, ecarts: data.data?.ecarts}))
-    } catch (e: any) {
-      setLoader((prev: any)=>({...prev, getAllEcarts: false}))
-      notif.error(`An Error Occured:  ${e.message}`)
-    }
-  }
-
+  useEffect(()=>{
+    getEcartItems(paymentTrackingId)
+  },[paymentTrackingId])
+  
+  // this would get called once payment succeed
   async function getEcartItems(cartId: string){
     try {
 
@@ -562,128 +522,22 @@ function CheckoutCont({
         return
       }
 
-      setData((prev: any)=>({...prev, ecartItems: data.data.items}))
       setEcartInfo(data.data)
+      console.log(data.data)
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
-      calculateTotalPayment(data.data.items)
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
       setError((prev: any)=>({...prev, getAllEcartItems: `An Error Occured:  ${e.message}`}))
     }
   }
 
-  function calculateTotalPayment(ecartItems: any){
-    const totalAmount = ecartItems.reduce((total: number, arr: any)=> {
-      total += arr.item_price * arr.item_quantity
-      return total;
-    },0)
-    const currency = ecartItems.map((cart: any)=> cart.item_currency)[0];
-    setTotalPayment({amount: totalAmount, currency})
+  if(Loader.getAllEcartItems){
+    return <LoaderScreenComp full={true}/>
   }
-
-  if(Loader.getAllEcarts){
-    return <LoaderScreenComp full={true} />
+  
+  if(Error.getAllEcartItems !== null){
+    return <ErrorScreen full={true} text={Error.getAllEcartItems} />
   }
-
-  if(Error.getAllEcarts !== null){
-    return <ErrorScreen full={true} text={Error.getAllEcarts} />
-  }
-
-  return (
-    <div className="w-full flex flex-col items-center justify-center">
-      <div className="relative w-full flex items-center justify-start px-4 py-3 ">
-        <button
-          onClick={() => toggleStep(1)}
-          className="px-3 py-2 rounded-md bg-dark-300"
-        >
-          <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
-        </button>
-        <p className="text-white-100 text-[18px] ml-5 font-extrabold ">
-          Checkout 
-          {
-            Object.entries(selectedEcart).length > 0 
-            && 
-            <span className="absolute left-[15px] bottom-[-30px] text-[12px] px-3 py-1 rounded-md bg-blue-300 text-white-100">
-              { selectedEcart?.paid === "false" ? "unpaid" : selectedEcart.paid === "true" && selectedEcart.paid === "false" ? "uncomfirmed" : "" }
-            </span>
-          }
-        </p>
-        <select name="" id="" className="absolute top-4 right-5 px-4 py-3 text-[12px] rounded-[30px] bg-dark-200 text-white-100" onChange={(e: any)=>{
-          const value = e.target.value;
-          if(value === "") return;
-          setCartId(value)
-        }}>
-          <option value="">Select E-carts.</option>
-          {
-            Data.ecarts.length > 0 ?
-              Data.ecarts.filter((ecart: any)=> ecart.confirmed === "false").map((data: any)=>(
-                <option value={data.id} key={data.id}>{data.name}</option>
-              ))
-              :
-              <option value="">No ecarts available.</option>
-          }
-        </select>
-      </div>
-      <br />
-      <br />
-      <div className="w-full h-[450px] noScrollBar flex flex-col items-start justify-start px-3 gap-5 overflow-y-scroll ">
-        {
-          Loader.getAllEcartItems ? 
-            <LoaderScreenComp full={true} />
-            :
-          Error.getAllEcartItems !== null ?
-            <ErrorScreen full={true} text={Error.getAllEcartItems} />
-            :
-          cartId === "" && Data.ecartItems.length === 0 ?
-            <ErrorScreen full={true} text="Select e-cart" size="md" />
-            :
-          cartId !== "" && Data.ecartItems.length > 0 ?
-            Data.ecartItems.map((data: any, i: number) => (
-                <CartCard key={i} getEcartItems={getEcartItems} setTempCheckoutInfo={setTempCheckoutInfo} calculateTotalPayment={calculateTotalPayment} data={data} />
-              ))
-            :
-            <ErrorScreen full={true} text="No cart items" size="md" />
-        }
-        <div className="w-full h-[120px] "></div>
-      </div>
-      {(cartId !== "" && Data.ecartItems.length > 0) && <div className="w-full h-[100px] flex items-end py-2 justify-between absolute bottom-0 left-0 px-3 ">
-        <div className="w-auto flex flex-col items-start justify-start">
-          <p className="text-white-300 text-[12px] ">Total Price</p>
-          <p className="text-white-100 text-[20px] font-extrabold ">
-            {(totalPayment.currency === "" && totalPayment.amount === 0 ) ? "" :  formatCurrency(totalPayment.currency, totalPayment.amount)}
-          </p>
-        </div>
-        <button
-          className="w-auto px-7 py-3 rounded-[30px] bg-blue-300 font-extrabold text-white-100 transition-all hover:bg-dark-200 scale-[.95] mr-5 "
-          onClick={handleCheckout}
-        >
-          Checkout & Pay Now
-        </button>
-      </div>}
-    </div>
-  );
-}
-
-function AlertContainer({
-  active,
-  toggleActive,
-  toggleKeyboard,
-  toggleStep,
-  paymentData,
-  message,
-  ecartInfo
-}: any) {
-  async function handleRefund() {}
-
-  function handleCloseModal() {
-    const confirm = window.confirm("Are you sure about this action?");
-    if (!confirm) return;
-    toggleActive();
-    toggleKeyboard();
-    toggleStep(2);
-  }
-
-  console.log(ecartInfo)
 
   const isConfirmed = (ecartInfo.paid === "true" && ecartInfo.confirmed === "false") ? "false" : "true"
 
@@ -731,114 +585,5 @@ function AlertContainer({
         </div>
       </div>
     </Modal>
-  );
-}
-
-function CartCard({ data, getEcartItems, setTempCheckoutInfo, calculateTotalPayment, key }: any) {
-  const {Data, setData, setLoader, setError} = useContext<any>(DataContext)
-
-  const productStyle = {
-    backgroundImage: `url("${data.item_image}")`,
-    backgroundSize: "contain",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  };
-
-  let [quantity, setQuantity] = useState(1);
-
-  useEffect(()=>{
-    setQuantity(data.item_quantity)
-  },[])
-  
-  const itemData = data;
-
-  async function updateItemQuantity(quantity: any){
-    try {
-
-      setLoader((prev: any)=>({...prev, updatCartItems: true}))
-      const url = APIROUTES.addToCart
-      const {res, data} = await Fetch(url, {
-        method: "POST",
-        body: JSON.stringify({
-          cartId: itemData.ecart_id,
-          itemId: itemData.item_id,
-          quantity,
-        })
-      });
-      setLoader((prev: any)=>({...prev, updatCartItems: false}))
-
-      if(!data.success){
-        notif.error(data.message)
-        return
-      }
-
-      getEcartItems(itemData.ecart_id)
-    } catch (e: any) {
-      setLoader((prev: any)=>({...prev, updatCartItems: false}))
-      notif.error(`An Error Occured:  ${e.message}`)
-    }
-  }
-
-  const incQty = () => {
-    let newQty = quantity
-    newQty += 1;
-    setQuantity(newQty)
-    updateItemQuantity(newQty)
-  }
-  const decQty = () =>{
-    let newQty = quantity;
-    newQty <= 1 ? newQty = 1 : newQty -= 1
-    setQuantity(newQty)
-    updateItemQuantity(newQty)
-  }
-    
-
-  return (
-    <div
-      className="w-full h-[90px] bg-dark-200 rounded-md p-4 flex items-center justify-between gap-5 "
-      key={key}
-    >
-      <div
-        className="w-[50px] rounded-md relative  h-[50px] bg-white-100 "
-        style={{ ...productStyle }}
-      ></div>
-      <div className="w-auto flex flex-col items-start justify-start">
-        <p className="text-white-100 text-[15px] font-extrabold capitalize ">{data.item_name}</p>
-        <p className="text-white-200 text-[12px] font-extrabold">
-          {formatCurrency(data.item_currency, data.item_price)}
-        </p>
-      </div>
-      <div
-        id="left"
-        className="w-auto flex flex-row items-center justify-start p-1 rounded-md"
-      >
-        <button
-          className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-          onClick={()=>{
-            decQty()
-          }}
-        >
-          -
-        </button>
-        <button className="btn flex flex-col items-center justify-center px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 ">
-          {quantity}
-        </button>
-        <button
-          className="btn flex flex-col items-center justify-center bg-dark-200 px-4 py-2 rounded-md  scale-[.83] hover:scale-[.90] transition-all cursor-pointer text-[15px] font-extrabold text-white-200 "
-          onClick={()=>{
-            incQty()
-          }}
-        >
-          +
-        </button>
-      </div>
-      <button
-        onClick={() => console.log(Data.ecartItems)}
-        data-id={data.item_id}
-        className="h-full px-2 py-2 rounded-md bg-red-800 text-red-200 "
-      >
-        <FaTrashAlt className="text-[15px]" />
-      </button>
-    </div>
   );
 }

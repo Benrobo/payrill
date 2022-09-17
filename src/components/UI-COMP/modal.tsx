@@ -24,7 +24,7 @@ function Modal({ children, isActive, clickHandler, backHandler, back }: ModalPro
           className="absolute scale-[.60] top-1 right-2 px-4 py-4 flex flex-row items-center justify-center rounded-[50%] bg-red-900 opacity-[.8] text-[15px] "
           onClick={clickHandler}
         >
-          <CgClose className="text-[25px] text-red-200 " />
+          <CgClose className="text-[25px] text-white-100 " />
         </button>
       )}
       {back && (
@@ -36,7 +36,7 @@ function Modal({ children, isActive, clickHandler, backHandler, back }: ModalPro
               typeof backHandler !== "undefined" && backHandler()
             }}
           >
-            <CgClose className="text-[25px] text-red-200 " />
+            <CgClose className="text-[25px] text-white-100 " />
           </button>
         </Link>
       )}
@@ -66,7 +66,7 @@ export function OrgModal({ children, isActive, clickHandler, backHandler, back }
           className="absolute scale-[.60] top-1 right-2 px-4 py-4 flex flex-row items-center justify-center rounded-[50%] bg-red-900 opacity-[.8] text-[15px] "
           onClick={clickHandler}
         >
-          <CgClose className="text-[25px] text-red-200 " />
+          <CgClose className="text-[25px] text-white-100 " />
         </button>
       )}
       {back && (
@@ -78,7 +78,7 @@ export function OrgModal({ children, isActive, clickHandler, backHandler, back }
               typeof backHandler !== "undefined" && backHandler()
             }}
           >
-            <CgClose className="text-[25px] text-red-200 " />
+            <CgClose className="text-[25px] text-white-100 " />
           </button>
         </Link>
       )}

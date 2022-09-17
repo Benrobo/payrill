@@ -116,7 +116,7 @@ function OrgDashboard() {
                 <br />
                 <div className="w-auto flex flex-col items-start justify-start">
                 {(currency !== "") ? <p className="text-white-100 text-[25px] font-extrabold font-sans  ">
-                    {formatCurrency(currency, balance)}
+                    {formatCurrency(currency, balance).replace("CA$", "CAD ")}
                 </p> : <p className="text-white-100 text-[25px] font-extrabold font-sans  ">
                     0.000
                 </p>}

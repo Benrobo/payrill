@@ -3,6 +3,7 @@ import jwtDecode from "jwt-decode"
 import { NetworkDataType, NetworkErrorType, NetworkLoadingType, ProviderType, PinType } from "../@types";
 import APIROUTES from "../apiRoutes";
 import Fetch from "../utils/fetch";
+import Notification from "../utils/toast";
 
 
 const DataContext = createContext({})
@@ -12,6 +13,8 @@ export default DataContext
 const PAYRILL_STORAGE_NAME = "payrill"
 const PAYRILL_AUTHTOKEN_NAME = "payrill-authtoken"
 
+
+const notif = new Notification(10000)
 
 export function DataContextProvider({ children }: any) {
 
@@ -58,7 +61,9 @@ export function DataContextProvider({ children }: any) {
         updatCartItems: false,
         payForCart: false,
         getAllEcarts: false,
-        getAllEcartItems: false
+        getAllEcartItems: false,
+        deleteEcartItem: false,
+        refundCart: false
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -81,7 +86,9 @@ export function DataContextProvider({ children }: any) {
         updatCartItems: null,
         payForCart: null,
         getAllEcarts: null,
-        getAllEcartItems: null
+        getAllEcartItems: null,
+        deleteEcartItem: null,
+        refundCart: null
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({
@@ -202,6 +209,32 @@ export function DataContextProvider({ children }: any) {
         }
     }
 
+    // refund cart
+    async function refundCart(ecartId: string){
+        try {
+            
+            setLoader((prev: any)=>({...prev, refundCart: true}))
+            const url = APIROUTES.refundCart;
+            const {res, data} = await Fetch(url, {
+                method: "POST",
+                body: JSON.stringify({ecartId})
+            });
+            setLoader((prev: any)=>({...prev, refundCart: false}))
+
+            if(!data.success){
+                notif.error(data.message)
+                return
+            }
+
+            notif.success(data.message);
+
+        } catch (e: any) {
+            setLoader((prev: any)=>({...prev, refundCart: false}))
+            notif.error(`Something went wrong. ${e.message} `)
+            return
+        }
+    }
+
     const ProviderParams  = {
         logout ,
         pin,
@@ -212,6 +245,7 @@ export function DataContextProvider({ children }: any) {
         Error,
         steps,
         walletInfo,
+        refundCart,
         setSteps,
         clearStep,
         setError,

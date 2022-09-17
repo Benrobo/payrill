@@ -217,7 +217,7 @@ function CreateStore({active, toggleActive, getAllStores}: any){
                             <div className="w-full flex items-start justify-start">
                                 <button className="px-3 py-2 bg-dark-300 cursor-default  rounded-l-md text-white-300 ">https://</button>
                                 <input type="text" placeholder='sub-domain' name="subdomain"  onChange={handleInput} value={inputData.subdomain} className="w-full px-3 py-2 bg-dark-100 border-none outline-none " />
-                                <button className="px-3 py-2 bg-dark-300 cursor-default rounded-r-md text-white-300 ">payrill.com</button>
+                                <button className="px-3 py-2 bg-dark-300 cursor-default rounded-r-md text-white-300 ">payrill.store</button>
                             </div>
                             <br />
                             <textarea name="description" id="" placeholder='description' cols={30} rows={2} className="w-full bg-dark-100 rounded-md text-white-200 border-none outline-none px-3 py-3 "  onChange={handleInput} value={inputData.description}></textarea>
