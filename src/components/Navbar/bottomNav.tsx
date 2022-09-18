@@ -28,7 +28,7 @@ function BottomNavbar({ activeName }: BottomNavBarProps) {
 
   return (
     <div
-      className={`w-full md:w-[500px] md:w-[${DEVICE_WIDTH}] bg-dark-200 px-4 py-3 h-[70px] fixed bottom-0 text-white-100 flex flex-row items-center justify-between `}
+      className={`w-full md:w-[500px] md:w-[${DEVICE_WIDTH}] bg-dark-200 px-1 md:px-4 py-3 h-[70px] fixed bottom-0 text-white-100 flex flex-row items-center justify-between `}
     >   
       <Link to="/dashboard">
         <button className={`text-[20px] scale-[.90] hover:scale-[1] hover:text-blue-200 hover:opacity-[1] transition-all rounded-[10px] p-1 ${isEqual(activeName, "dashboard") ? "text-blue-200 scale-[1] font-extrabold" : "text-white-100 opacity-[.5] font-semibold scale-[.90] "} flex flex-col items-center justify-center`}>

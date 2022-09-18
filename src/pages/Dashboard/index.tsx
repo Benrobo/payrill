@@ -123,7 +123,6 @@ function Dashboard() {
     <Layout sideBarActiveName="dashboard">
         <div className="w-full h-screen overflow-y-scroll noScrollBar ">
         <TopNavbar />
-        <br />
         <div className="w-full flex flex-row items-center justify-end mb-2 px-3">
           <button
             className="px-4 py-2 flex flex-row items-center justify-around rounded-[30px] bg-dark-200 text-[15px "
@@ -170,6 +169,7 @@ function Dashboard() {
 
         {/* <LoaderScreen /> */}
       </div>
+      <div className="w-full h-[100px] "></div>
       </Layout>
   );
 }
