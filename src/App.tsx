@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom"
 
 import "./App.css"
@@ -26,6 +26,20 @@ import VirtualCards from './pages/VirtualCards'
 
 
 function App() {
+
+  useEffect(()=>{
+    function openFullscreen() {
+      var elem = document.documentElement as any;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
+    openFullscreen()
+  },[])
 
   return (
     <DataContextProvider>
