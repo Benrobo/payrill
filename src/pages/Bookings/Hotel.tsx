@@ -150,7 +150,7 @@ function SelectedHotel({
             onClick={toggleContinuePayment}
             data-id={data?.id}
           >
-            Continue Booking
+            Book Now
           </button>
         </div>
       </div>
