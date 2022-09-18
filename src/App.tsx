@@ -24,11 +24,21 @@ import Verify from './pages/Verify/Verify'
 import VirtualCards from './pages/VirtualCards'
 
 function App() {
+
+  const [isFScreen, setIsFScreen] = useState(false)
+
   document.addEventListener("dblclick", ()=>{
+    setIsFScreen(!isFScreen)
     document.documentElement.requestFullscreen().catch((err)=>{
       console.log(err)
     })
   })
+
+  useEffect(()=>{
+    if(!isFScreen){
+      document.exitFullscreen()
+    }
+  },[isFScreen])
 
   return (
     <DataContextProvider>
