@@ -196,13 +196,13 @@ function PaymentSection({ active, data, amount, togglePayment }: any) {
         body:JSON.stringify(paymentInfo)
       });
       setLoader((prev: any)=>({...prev, withdraw: false}))
-
+      console.log(data.success === false)
       if(!data.success){
         notif.error(data.message)
         return
       }
       
-      notif.success(data.message)
+      notif.success("Hotel Booked Successfully")
       closeKeyboard()
       await sleep(1.1)
       window.location.reload()

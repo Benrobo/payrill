@@ -72,7 +72,7 @@ function Keyboard({title, subTitle, active, toggleKeyboard, handler}: KeyboardPr
 
   return (
     <Modal isActive={active} clickHandler={toggleKeyboard} >
-      <div id="dailog-box" className={`w-full ${active ? "h-auto" : "h-0"} overflow-y-scroll noScrollBar transition-all bg-dark-200 rounded-t-[30px] absolute bottom-0 left-0 px-2 md:px-5 py-3 flex flex-col items-center justify-start `} data-name="keyboard">
+      <div id="dailog-box" className={`w-full ${active ? "h-[500px]" : "h-0"} overflow-y-scroll noScrollBar transition-all bg-dark-200 rounded-t-[30px] absolute bottom-0 left-0 px-2 md:px-5 py-3 flex flex-col items-center justify-start `} data-name="keyboard">
         <div id="knob" className="w-[50px] h-[5px] rounded-[50px] absolute top-3 bg-white-400 "></div>
         <br />
         <div id="head" className="w-full flex flex-col items-center justify-center">

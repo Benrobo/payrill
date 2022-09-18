@@ -141,7 +141,7 @@ function PaymentSection({ coinData, active, togglePayment }: any) {
               return
             }
             
-            notif.success(data.message)
+            notif.success("Purchased Successfully")
             closeKeyboard()
             await sleep(1.1)
             window.location.reload()
