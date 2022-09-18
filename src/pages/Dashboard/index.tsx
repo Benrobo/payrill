@@ -120,8 +120,8 @@ function Dashboard() {
   }
 
   return (
-    <>
-      <Layout sideBarActiveName="dashboard">
+    <Layout sideBarActiveName="dashboard">
+        <div className="w-full h-screen overflow-y-scroll noScrollBar ">
         <TopNavbar />
         <br />
         <div className="w-full flex flex-row items-center justify-end mb-2 px-3">
@@ -169,8 +169,8 @@ function Dashboard() {
         />
 
         {/* <LoaderScreen /> */}
+      </div>
       </Layout>
-    </>
   );
 }
 

@@ -144,7 +144,7 @@ function Scanner() {
   return (
     <Layout>
       <div
-        className={`w-full md:w-[500px] h-screen fixed top-0 bg-dark-100 z-[20] `}
+        className={`w-full md:w-[500px] h-screen overflow-y-scroll noScrollBar fixed top-0 bg-dark-100 z-[20] `}
       >
         {steps === 1 && qrcodeId === "" ? (
           <div className="w-full bg-dark-100 h-screen relative flex flex-col items-center justify-center">
