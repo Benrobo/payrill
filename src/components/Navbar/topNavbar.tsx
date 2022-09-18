@@ -3,9 +3,10 @@ import { BiBell } from 'react-icons/bi'
 
 function TopNavbar() {
 
+    const user = JSON.parse(localStorage.getItem("payrill") as any)
 
     const avatarImg = {
-        background: `url("https://avatars.dicebear.com/api/avataaars/a.svg")`,
+        background: `url("https://avatars.dicebear.com/api/avataaars/${user.username}.svg")`,
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundPosition:"center"
