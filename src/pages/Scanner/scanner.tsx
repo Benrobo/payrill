@@ -22,7 +22,7 @@ import { IoIosQrScanner, IoMdQrScanner } from "react-icons/io";
 
 
 const qrcodeconstraints = {
-  facingMode: "user",
+  facingMode: "environment",
 };
 
 const notif = new Notification(10000)
