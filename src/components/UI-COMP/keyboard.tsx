@@ -72,7 +72,7 @@ function Keyboard({title, subTitle, active, toggleKeyboard, handler}: KeyboardPr
 
   return (
     <Modal isActive={active} clickHandler={toggleKeyboard} >
-      <div id="dailog-box" className={`w-full ${active ? "h-[500px]" : "h-0"} transition-all bg-dark-200 rounded-t-[30px] absolute bottom-0 left-0 px-5 py-3 flex flex-col items-center justify-start `} data-name="keyboard">
+      <div id="dailog-box" className={`w-full ${active ? "h-auto" : "h-0"} overflow-y-scroll noScrollBar transition-all bg-dark-200 rounded-t-[30px] absolute bottom-0 left-0 px-2 md:px-5 py-3 flex flex-col items-center justify-start `} data-name="keyboard">
         <div id="knob" className="w-[50px] h-[5px] rounded-[50px] absolute top-3 bg-white-400 "></div>
         <br />
         <div id="head" className="w-full flex flex-col items-center justify-center">
@@ -83,7 +83,7 @@ function Keyboard({title, subTitle, active, toggleKeyboard, handler}: KeyboardPr
             { subTitle || ""}
           </p>
           <br />
-          <div id="pinScreen" className="w-full flex flex-row items-center justify-between px-5">
+          <div id="pinScreen" className="w-full flex flex-row items-center justify-between px-3 md:px-5">
             {
               pin.labelPin.split("").map((pins: any, i: any)=>(
                 <div key={i} className="h-[50px] w-[70px] rounded-md bg-dark-100 flex flex-col items-center justify-center font-extrabold text-[20px] ">
@@ -101,10 +101,10 @@ function Keyboard({title, subTitle, active, toggleKeyboard, handler}: KeyboardPr
             </div> */}
           </div>
           <br />
-          <div className="w-full flex flex-wrap items-center justify-center">
+          <div className="w-full flex flex-row flex-wrap items-center justify-center">
             {
               keyPad.map((key, i)=> (
-                <button key={i} id="pad" data-key={i} data-value={key} className="w-[70px] h-[70px] rounded-[50%] hover:bg-dark-100 cursor-pointer flex flex-col items-center justify-center m-4 font-extrabold" onClick={(e)=>{
+                <button key={i} id="pad" data-key={i} data-value={key} className="w-[60px] h-[60px] rounded-[50%] scale-[.90] md:scale-[1]  hover:bg-dark-100 cursor-pointer flex flex-col items-center justify-center m-4 font-extrabold" onClick={(e)=>{
                   if(key !== "done") handlePin(e)
                   if(key === "backspace") clearPin(e)
                   if(key === "done") handleKeyboardData(e)
@@ -120,6 +120,7 @@ function Keyboard({title, subTitle, active, toggleKeyboard, handler}: KeyboardPr
             }
           </div>
         </div>
+        <div className="w-full h-[20px] "></div>
       </div>
   </Modal>
   )
