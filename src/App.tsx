@@ -11,6 +11,7 @@ import CryptoCurrencies from './pages/Crypto/CryptoCurrencies'
 import Dashboard from './pages/Dashboard'
 import OrgDashboard from './pages/Dashboard/OrgDashboard'
 import Ecart from './pages/Ecart/Ecart'
+import HomePage from './pages/home'
 import TopUp from './pages/Payments/TopUp'
 import Transfer from './pages/Payments/Transfer'
 import Withdraw from './pages/Payments/Withdraw'
@@ -81,6 +82,7 @@ function App() {
               <ProtectedRoute children={<OrgSettings />} />
             } />
             <Route path='/auth' element={<Authentication />} />
+            <Route path='/' element={<HomePage />} />
           </Routes>
         </Router>
       </div>
