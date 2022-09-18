@@ -1,4 +1,6 @@
 import React,{useState, useEffect, useContext, useRef} from 'react'
+import { BiLinkExternal } from 'react-icons/bi';
+import { FaLink } from 'react-icons/fa';
 import APIROUTES from '../../apiRoutes';
 import { Layout } from '../../components'
 import { ErrorScreen } from '../../components/UI-COMP/error';
@@ -73,12 +75,13 @@ function Store() {
                         <p className="text-white-100 font-extrabold">Virtual Store</p>
                         <p className="text-white-300 text-[13px] ">Create and Manage your store</p>
                     </div>
-                    <button className=" absolute right-5 top-4 bg-blue-300 px-5 py-2 rounded-md text-white-100 scale-[.80]" onClick={toggleActive} >
+                    {Data.stores.length === 0 && <button className=" absolute right-5 top-4 bg-blue-300 px-5 py-2 rounded-md text-white-100 scale-[.80]" onClick={toggleActive} >
                         Create Store
-                    </button>
+                    </button>}
                 </div>
                 <br />
                 <div className="w-full px-4 md:px-4 h-full noScrollBar overflow-y-scroll flex flex-wrap items-center justify-start gap-5">
+                    <div className="w-full h-[20px] "></div>
                     {
                         Data.stores.length > 0 ?
                             Data.stores.map((data: any) => (
@@ -101,6 +104,9 @@ function Store() {
                                         <button className=" absolute right-5 top-4 bg-dark-100 px-5 py-2 rounded-md text-white-300 scale-[.80]">
                                             Manage
                                         </button>
+                                    </a>
+                                    <a href={`https://${data.subdomain}.payrill.store`} target={"_blank"} className="w-auto absolute top-[0px] right-[-2px] ">
+                                        <BiLinkExternal />
                                     </a>
                                 </div>
                             ))
