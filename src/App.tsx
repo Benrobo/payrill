@@ -29,11 +29,13 @@ function App() {
 
   const handle = useFullScreenHandle();
 
-  const activateFScreen = ()=> handle.enter
+  useEffect(()=>{
+    handle.enter()
+  },[])
 
   return (
     <DataContextProvider>
-      <FullScreen handle={activateFScreen}>
+      <FullScreen handle={handle}>
       <div className="App">
         <Router>
           <Routes>
