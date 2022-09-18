@@ -102,7 +102,7 @@ function Products() {
           </div>
           <div className="w-auto flex items-center justify-start">
             <button className="px-3 py-2 rounded-md bg-blue-300 text-white-100 font-extrabold scale-[.85] hover:scale-[.95] transition-all " onClick={()=> toggleProductCardInfo(null, "addProduct")} disabled={Loader.getStoreItems}>
-              Create Product
+              Add Product
             </button>
           </div>
         </div>
