@@ -332,7 +332,7 @@ function CheckoutCont({
       // handle importing
       if (pin.originalPin === "") return;
       if (ecartId === "") return notif.error("enter ecart id");
-      if (to === "") return notif.error("select a user to transfer to.");
+      // if (to === "") return notif.error("select a user to transfer to.");
       // handle share
       try {
         const url = APIROUTES.transferCart;

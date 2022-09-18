@@ -19,7 +19,7 @@ class Notification {
     }
 
     error(message = "ERROR") {
-        let formatedMsg = message.split("")[0].toUpperCase() + message.slice(1);
+        let formatedMsg = message === "" ? message : message.split("")[0].toUpperCase() + message.slice(1);
         (this as any).notif.error({
             message: formatedMsg,
             dismissible: true
@@ -27,7 +27,7 @@ class Notification {
     }
 
     success(message = "SUCCESS") {
-        let formatedMsg = message.split("")[0].toUpperCase() + message.slice(1);
+        let formatedMsg = message === "" ? message : message.split("")[0].toUpperCase() + message.slice(1);
         (this as any).notif.success({
             message: formatedMsg,
             dismissible: true
