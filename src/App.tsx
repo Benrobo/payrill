@@ -22,27 +22,18 @@ import Store from './pages/Store/Store'
 import OrgSettings from './pages/UserSettings/OrgSettings'
 import Verify from './pages/Verify/Verify'
 import VirtualCards from './pages/VirtualCards'
-
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
 
 function App() {
 
-  useEffect(()=>{
-    function openFullscreen() {
-      var elem = document.documentElement as any;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) { /* Safari */
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) { /* IE11 */
-        elem.msRequestFullscreen();
-      }
-    }
-    openFullscreen()
-  },[])
+  const handle = useFullScreenHandle();
+
+  const activateFScreen = ()=> handle.enter
 
   return (
     <DataContextProvider>
+      <FullScreen handle={activateFScreen}>
       <div className="App">
         <Router>
           <Routes>
@@ -100,6 +91,7 @@ function App() {
           </Routes>
         </Router>
       </div>
+      </FullScreen>
     </DataContextProvider>
   )
 }

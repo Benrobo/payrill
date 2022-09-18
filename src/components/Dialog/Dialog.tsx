@@ -19,6 +19,7 @@ function Dialog({height, children}: DialogProp ) {
         <div id="knob" className="w-[50px] h-[5px] rounded-[50px] absolute top-3 bg-white-400 "></div>
         <div className="w-full mt-5">
             {children}
+            <div className="w-full h-[50px] "></div>
         </div>
     </div>
   )
