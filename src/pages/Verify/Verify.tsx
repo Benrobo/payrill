@@ -100,7 +100,7 @@ function Verify() {
                 <ErrorScreen size='md' full={true} text={Error.getAllEcartItems} />
                 :
               Data.ecartItems.length > 0 ?  
-                Data.ecartItems.map((data: any, i: number)=>(
+                Data.ecartItems.filter((item: any)=> item.paid === "true" && item.confirmed === "false").map((data: any, i: number)=>(
                   <div key={i} className="w-[600px] rounded-md bg-dark-200 flex items-center justify-between p-4">
                     <div className="w-auto flex items-start justify-start gap-5">
                       <div className="w-[50px] h-[50px] bg-dark-200 rounded-md" style={{...cardStyle, backgroundImage: `url(${data.item_image})`}}></div>

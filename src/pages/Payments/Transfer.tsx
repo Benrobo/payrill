@@ -133,11 +133,12 @@ function Transfer() {
     function searchUsers(e: any){
         const value = e.target.value.toLowerCase();
         let filteredData : any;
-        if(value.includes("@")){
+        if(value.includes("@") || value !== ""){
             // update search value
             if(validator.isEmail(value)) setSearchValue(value)
 
             let newVal = value.replace("@", "")
+            console.log(newVal)
             filteredData = storageUserData.filter((data: any)=> data.username.includes(newVal))
             return setData((prev: any)=> ({...prev, ["users"]: filteredData}))
         }
@@ -147,7 +148,7 @@ function Transfer() {
 
         // clear state if input is empty
         if(value === "") {
-            setData((prev: any)=> ({...prev, ["users"]: []}))
+            setData((prev: any)=> ({...prev, ["users"]: storageUserData}))
             setSearchValue("")
         }
     }
@@ -214,7 +215,7 @@ function Transfer() {
                     :
                     <SearchComponent 
                         handleActiveState={handleActiveState} 
-                        data={storageUserData} 
+                        data={Data.users} 
                         searchInput={searchValue} 
                     />
                 }
@@ -254,37 +255,40 @@ function SearchComponent({handleActiveState, data, searchInput}: any) {
     
 
     return (
-        <div className="w-full h-auto px-3 flex flex-col items-center justify-center gap-3">
+        <div className="w-full h-screen px-3 flex flex-col items-center justify-center gap-3">
             <div className="w-full flex flex-row items-start justify-start">
                 <p className="text-white-300 text-[15px] ">All Users</p>
             </div>
-            {
-                data.length === 0 ?
-                    <ErrorScreen full={true} text="No user were found" />
-                    :
-                data.map((list: any, i: number)=>(
-                    <div id="card" key={i} className="w-full flex flex-row items-row justify-between py-2 rounded-[12px] cursor-pointer" data-name="dialog" data-type="user" data-id={list.id} onClick={handleActiveState}>
-                        <div id="left" data-name="dialog" className="w-auto flex flex-row items-start justify-start gap-3">
-                            <div
-                                id="img"
-                                className="p-6 rounded-[50%] bg-dark-200 border-[3px] border-solid border-blue-200 "
-                                style={{...avatarImg, background: `url("https://avatars.dicebear.com/api/avataaars/${list.username}.svg")`}}
-                            ></div>
-                            <div className="w-auto flex flex-col items-start justify-start">
-                                <span className="text-white-200 text-[15px] font-extrabold capitalize ">
-                                    {list.name}
-                                </span>
-                                <span className="text-white-300 text-[12px]">
-                                    @{list.username}
-                                </span>
+            <div className="w-full h-full overflow-y-scroll noScrollBar flex flex-col items-center justify-start gap-3">
+                {
+                    data.length === 0 ?
+                        <ErrorScreen full={true} text="No user were found" />
+                        :
+                    data.map((list: any, i: number)=>(
+                        <div id="card" key={i} className="w-full flex flex-row items-row justify-between py-2 rounded-[12px] cursor-pointer" data-name="dialog" data-type="user" data-id={list.id} onClick={handleActiveState}>
+                            <div id="left" data-name="dialog" className="w-auto flex flex-row items-start justify-start gap-3">
+                                <div
+                                    id="img"
+                                    className="p-6 rounded-[50%] bg-dark-200 border-[3px] border-solid border-blue-200 "
+                                    style={{...avatarImg, background: `url("https://avatars.dicebear.com/api/avataaars/${list.username}.svg")`}}
+                                ></div>
+                                <div className="w-auto flex flex-col items-start justify-start">
+                                    <span className="text-white-200 text-[15px] font-extrabold capitalize ">
+                                        {list.name}
+                                    </span>
+                                    <span className="text-white-300 text-[12px]">
+                                        @{list.username}
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="right" className="w-auto flex flex-col items-center justify-center">
+                                <IoIosArrowForward className='text-white-100' />
                             </div>
                         </div>
-                        <div id="right" className="w-auto flex flex-col items-center justify-center">
-                            <IoIosArrowForward className='text-white-100' />
-                        </div>
-                    </div>
-                ))
-            }
+                    ))
+                }
+            </div>
+            <div className="w-full h-[150px] "></div>
             <br />
             {/* {searchInput !== "" && <div className="w-full">
                 <p className="text-white-300 text-[15px] ">By Email: </p>
