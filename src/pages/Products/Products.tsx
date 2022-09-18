@@ -55,8 +55,8 @@ function Products() {
   },[])
 
   useEffect(()=>{
-    // const storeName = JSON.parse(localStorage.getItem("payrill_store_domain") as any)
-    getOrgStoreInfo(Data.orgStoreInfo.subdomain)
+    const subdomain = JSON.parse(localStorage.getItem("payrill_store_domain") as any)
+    getOrgStoreInfo(subdomain)
   },[])
 
   async function getAllItems(){
