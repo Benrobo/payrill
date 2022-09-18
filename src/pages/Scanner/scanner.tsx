@@ -101,7 +101,6 @@ function Scanner() {
     let videoId = document.querySelector("#qrcode-video") as any;
     videoId.width = "100%";
     videoId.height = "100%"
-    console.log(videoId)
   },[])
 
   async function getItemById(itemId: string){
@@ -148,7 +147,7 @@ function Scanner() {
         className={`w-full md:w-[500px] h-screen fixed top-0 bg-dark-100 z-[20] `}
       >
         {steps === 1 && qrcodeId === "" ? (
-          <div className="w-full bg-white-100 h-screen relative flex flex-col items-center justify-center">
+          <div className="w-full bg-dark-100 h-screen relative flex flex-col items-center justify-center">
             <QrReader
               onResult={handleQrcodeResult}
               constraints={qrcodeconstraints}
@@ -156,8 +155,14 @@ function Scanner() {
               videoId="qrcode-video"
               
             />
-            <div className="w-full flex flex-col items-center justify-center absolute top-[17%]">
-              <IoIosQrScanner className=" p-1 text-[290px] text-blue-200 " />
+            <div className="w-full flex flex-col items-center justify-center absolute top-[20%]">
+              {/* <IoIosQrScanner className=" p-1 text-[290px] scale-[1.5] text-dark-500 " /> */}
+              <div className="w-[300px] h-[280px] relative bg-white-800 ">
+                <div className=" w-[70px] h-[70px] rounded-md border-[5px] border-solid border-l-blue-200 border-t-blue-200 border-r-transparent border-b-transparent "></div>
+                <div className=" w-[70px] h-[70px] absolute top-0 right-0 rounded-md border-[5px] border-solid border-r-blue-200 border-t-blue-200 border-b-transparent border-l-transparent "></div>
+                <div className=" w-[70px] h-[70px] absolute bottom-0 left-0 rounded-md border-[5px] border-solid border-l-blue-200 border-b-blue-200 border-r-transparent border-t-transparent "></div>
+                <div className=" w-[70px] h-[70px] absolute bottom-0 right-0 rounded-md border-[5px] border-solid border-r-blue-200 border-b-blue-200 border-t-transparent border-l-transparent "></div>
+              </div>
             </div>
             <div className="w-full absolute bottom-0 py-2 flex flex-col items-center justify-center">
               <Link to="/dashboard">

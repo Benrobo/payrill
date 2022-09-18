@@ -54,6 +54,11 @@ function Products() {
     getAllItems()
   },[])
 
+  useEffect(()=>{
+    // const storeName = JSON.parse(localStorage.getItem("payrill_store_domain") as any)
+    getOrgStoreInfo(Data.orgStoreInfo.subdomain)
+  },[])
+
   async function getAllItems(){
     try {
 
@@ -78,6 +83,14 @@ function Products() {
       setLoader((prev: any)=>({...prev, getStoreItems: false}))
       setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
     }
+  }
+
+  if(Error.getOrgStoreInfo !== null){
+    return <ErrorScreen text={Error.getOrgStoreInfo} size={"lg"} full={true} />
+  }
+
+  if(!Loader.getOrgStoreInfo && Object.entries(Data.orgStoreInfo).length === 0){
+    return <ErrorScreen text={Error.getOrgStoreInfo} full={true} />
   }
 
   return (
@@ -275,14 +288,16 @@ function ProductCards({toggleProduct, data, key}:any){
   }
 
   return (
-    <div className="w-[200px] h-auto relative flex flex-col items-center justify-center border-[1px] border-solid border-dark-500 rounded-md "key={key}>
+    <div className="w-[200px] h-[300px] relative flex flex-col items-center justify-center border-[1px] border-solid border-dark-500 rounded-md "key={key}>
       <div onClick={(e)=>toggleProduct(e, "productCard")} className="w-full h-[150px] bg-dark-200 rounded-md p-2 cursor-pointer  " data-id={data.id}  style={{...cardStyle}}></div>
       <br />
-      <div className="w-full flex flex-col items-start justify-start px-2 pb-2">
+      <div className="w-full flex flex-col items-start justify-start mt-5 px-2 pb-3">
         <p className="text-white-100 text-[18px] font-extrabold ">{data.item_name}</p>
-        <p className="text-white-200 text-[15px] ">{data.item_description}</p>
+        <p className="text-white-200 text-[12px] ">{data.item_description}</p>
       </div>
-      <div className="w-full flex items-center justify-between mt-3 px-2 pb-2">
+      <br />
+      <br />
+      <div className="w-full absolute bottom-1 flex items-center justify-between mt-3 px-2 pb-2">
         <p className="text-white-100 text-[18px] font-extrabold ">
           {formatCurrency(data.item_currency, data.item_price)}
         </p>

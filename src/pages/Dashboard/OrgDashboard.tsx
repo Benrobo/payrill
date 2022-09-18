@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { FaArrowDown } from "react-icons/fa";
 import { GiWallet } from "react-icons/gi";
 import { MdProductionQuantityLimits } from "react-icons/md";
+import APIROUTES from "../../apiRoutes";
 import OrgLayout from "../../components/Layout/OrgLayout";
 import { ErrorScreen } from "../../components/UI-COMP/error";
 import { LoaderScreen, LoaderScreenComp } from "../../components/UI-COMP/loader";
 import DataContext from "../../context/DataContext";
 import { getLastPathName } from "../../utils";
 import { formatCurrency } from "../../utils/creditCard";
+import Fetch from "../../utils/fetch";
 
 function OrgDashboard() {
     const {Data, Loader, walletInfo, getOrgStoreInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext)
@@ -30,12 +32,9 @@ function OrgDashboard() {
     // setCurrency(userCurrency)
   },[])
 
-
-
   useEffect(()=>{
     // console.log({currency})
     // if(currency === "") return;
-    console.log("Currency ", currency)
     getWalletBalance(currency || userCurrency)
   },[currency])
 
@@ -54,8 +53,65 @@ function OrgDashboard() {
     setBalance(filterCurr.balance)
   }
 
+  useEffect(()=>{
+    fetchTransactions()
+  },[])
+
+  useEffect(()=>{
+    getAllItems()
+  },[])
+
+  async function getAllItems(){
+    try {
+
+      const storeId = JSON.parse(localStorage.getItem("payrill_store_id") as any);
+      setLoader((prev: any)=>({...prev, getStoreItems: true}))
+      const url = APIROUTES.getStoreItems
+
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({storeId})
+      });
+      setLoader((prev: any)=>({...prev, getStoreItems: false}))
+
+      if(!data.success){
+        setError((prev: any)=>({...prev, getStoreItems: data.message}))
+        return
+      }
+
+      setData((prev: any)=>({...prev, storeItems: data.data}))
+      setError((prev: any)=>({...prev, getStoreItems: null}))
+
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, getStoreItems: false}))
+      setError((prev: any)=>({...prev, getStoreItems: `An Error Occured:  ${e.message}`}))
+    }
+  }
+
+  async function fetchTransactions(){
+    try {
+      setLoader((prev: any)=>({...prev, transactions: true}))
+      const url = APIROUTES.getTransactions
+
+      const {res, data} = await Fetch(url, {
+        method: "GET",
+      });
+      setLoader((prev: any)=>({...prev, transactions: false}))
+
+      if(!data.success){
+        setError((prev: any)=>({...prev, transactions: data.message}))
+        return
+      }
+
+      setData((prev: any)=>({...prev, transactions: data.data}))
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, transactions: false}))
+      setError((prev: any)=>({...prev, transactions: ` An Error occured: ${e.message} `}))
+    }
+  }
+
   if(Loader.getOrgStoreInfo){
-    return <LoaderScreenComp text="Loading Store..." full={true} />
+    return <LoaderScreenComp text="Loading Dashboard..." full={true} />
   }
 
   // if(Loader.wallet){
@@ -132,7 +188,15 @@ function OrgDashboard() {
                 </div>
                 <br />
                 <div className="w-auto flex flex-col items-start justify-start">
-                    <p className="text-white-100 font-extrabold text-[30px] ">800</p>
+                  {
+                    Loader.getStoreItems ?
+                        <LoaderScreenComp full={false} />
+                        :
+                    !Loader.getStoreItems && Error.getStoreItems !== null ?
+                      <ErrorScreen text={Error.getStoreItems} />
+                      :
+                    <p className="text-white-100 font-extrabold text-[30px] ">{Data.storeItems.length}</p>
+                  }
                 </div>
             </div>
 
@@ -140,12 +204,20 @@ function OrgDashboard() {
                 <div className="w-auto flex items-start justify-start gap-3">
                     <MdProductionQuantityLimits className=" p-1 rounded-md bg-blue-900 text-blue-200 text-[50px] " />
                     <div className="w-auto">
-                        <p className="text-white-200 font-extrabold text-[20px] ">Total Transactions</p>
+                      <p className="text-white-200 font-extrabold text-[20px] ">Total Transactions</p>
                     </div>
                 </div>
                 <br />
                 <div className="w-auto flex flex-col items-start justify-start">
-                    <p className="text-white-100 font-extrabold text-[30px] ">800</p>
+                  {
+                    Loader.transactions ?
+                        <LoaderScreenComp full={false} />
+                        :
+                    !Loader.transactions && Error.transactions !== null ?
+                      <ErrorScreen text={Error.transactions} />
+                      :
+                    <p className="text-white-100 font-extrabold text-[30px] ">{Data.transactions.length}</p>
+                  }
                 </div>
             </div>
         </div>

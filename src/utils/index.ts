@@ -14,7 +14,7 @@ export function isEqual(propA: string | undefined, propB: string) {
 
 export function getLastPathName(){
   const path = window.location.pathname.replace(/\D/, "").split("/");
-  if(path.length > 2) return path[path.length-1]
+  if(path.length > 2) return path[path.length-1] === "" ? path[1] : path[path.length-1]
   return path[1]
 }
 

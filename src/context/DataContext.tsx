@@ -202,6 +202,7 @@ export function DataContextProvider({ children }: any) {
             setData((prev: any)=>({...prev,orgStoreInfo: data.data }))
             setError((prev: any)=>({...prev, getOrgStoreInfo: null}))
             localStorage.setItem("payrill_store_name", JSON.stringify(data.data?.name))
+            localStorage.setItem("payrill_store_domain", JSON.stringify(data.data?.subdomain))
             localStorage.setItem("payrill_store_id", JSON.stringify(data.data?.id))
         } catch (e: any) {
             setLoader((prev: any)=>({...prev, getOrgStoreInfo: false}))
