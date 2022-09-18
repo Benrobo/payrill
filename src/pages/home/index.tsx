@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 function HomePage() {
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center text-center px-4">
+    <div className="w-[70%] h-screen flex flex-col items-center justify-center text-center px-4 mx-auto">
         <p className="text-[50px] font-sans font-extrabold text-white-100 ">PayRill</p>
         <br />
         <p className="text-[20px] font-extrabold text-white-200  ">
