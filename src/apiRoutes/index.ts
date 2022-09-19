@@ -20,6 +20,8 @@ const APIROUTES = {
     removeFromCart: `${BASE_URL}/cart/remove`,
     transferCart: `${BASE_URL}/cart/transfer`,
     refundCart: `${BASE_URL}/cart/refund`,
+    approveCart: `${BASE_URL}/cart/approve`,
+    importECart: `${BASE_URL}/cart/import/:cartId`,
     createStore: `${BASE_URL}/store/create`,
     getAllStore: `${BASE_URL}/store/all`,
     getStoreBySubDomain1: `${BASE_URL}/store/byDomain/:subdomain`,

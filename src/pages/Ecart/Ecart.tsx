@@ -330,20 +330,14 @@ function CheckoutCont({
     }
     if (activeCartType === "receive") {
       // handle importing
-      if (pin.originalPin === "") return;
       if (ecartId === "") return notif.error("enter ecart id");
       // if (to === "") return notif.error("select a user to transfer to.");
       // handle share
       try {
-        const url = APIROUTES.transferCart;
+        const url = APIROUTES.importECart.replace(":cartId", ecartId);
         setLoader((prev: any) => ({ ...prev, transfer: true }));
         const { res, data } = await Fetch(url, {
-          method: "POST",
-          body: JSON.stringify({
-            pin: pin.originalPin,
-            to,
-            cartId: ecartId,
-          }),
+          method: "GET",
         });
         setLoader((prev: any) => ({ ...prev, transfer: false }));
 
@@ -418,7 +412,7 @@ function CheckoutCont({
                 ? "uncomfirmed"
                 : selectedEcart.confirmed === "true"
                 ? "Paid"
-                : "sdcdsc"}
+                : ""}
             </span>
           )}
         </p>
@@ -580,7 +574,12 @@ function CheckoutCont({
 
               <button
                 className="px-4 py-3 rounded-[30px] mt-5 w-full flex flex-col items-center justify-center font-vextrabold bg-blue-300"
-                onClick={() => toggleTransferKeyboard()}
+                onClick={()=>{
+                  if(activeCartType === "share"){
+                    return toggleTransferKeyboard();
+                  }
+                  handleEcartSharingandReceiving()
+                }}
               >
                 {activeCartType === "share" ? "Share Ecart" : "Import Ecart"}
               </button>

@@ -51,7 +51,7 @@ function Verify() {
     try {
 
       setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
-      const url = APIROUTES.getCartsItemsForOrg.replace(":cartId", ecartId);
+      const url = APIROUTES.getCartsItems.replace(":cartId", ecartId);
 
       const {res, data} = await Fetch(url, {
         method: "GET",
@@ -63,7 +63,8 @@ function Verify() {
         return
       }
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
-      setData((prev: any)=>({...prev, ecartItems: data.data}))
+      // setData((prev: any)=>({...prev, ecartItems: data.data}))
+      console.log(data)
       calculateTotalPayment(data.data)
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
