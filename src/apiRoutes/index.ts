@@ -33,7 +33,8 @@ const APIROUTES = {
     getWalletTransactions: `${BASE_URL}/transaction/all`,
     getWalletTransactionById: `${BASE_URL}/transaction/`,
     getUserCards: `${BASE_URL}/card/cards`,
-    changeCardStatus: `${BASE_URL}/card/status/:card/:status`
+    changeCardStatus: `${BASE_URL}/card/status/:card/:status`,
+    createVirtualCard: `${BASE_URL}/card/create`
   };
   
 

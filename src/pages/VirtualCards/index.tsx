@@ -7,7 +7,8 @@ import APIROUTES from "../../apiRoutes";
 import { Layout } from "../../components";
 import VirtualCard from "../../components/Cards/VirtualCard";
 import { ErrorScreen } from "../../components/UI-COMP/error";
-import { LoaderScreenComp, Spinner } from "../../components/UI-COMP/loader";
+import Keyboard from "../../components/UI-COMP/keyboard";
+import { LoaderScreen, LoaderScreenComp, Spinner } from "../../components/UI-COMP/loader";
 import Modal from "../../components/UI-COMP/modal";
 import DataContext from "../../context/DataContext";
 import { sleep } from "../../utils";
@@ -18,10 +19,14 @@ import Notification from "../../utils/toast";
 const notif = new Notification(10000);
 
 function VirtualCards() {
-  const { Data, Loader, Error, setData, setLoader, setError } =
+  const { Data, Loader, Error, pin, clearPin, setData, setLoader, setError } =
     useContext<any>(DataContext);
   const [active, setActive] = useState(true);
   const [activeVc, setActiveVc] = useState<any>({});
+  const [loading, setLoading] = useState(false)
+  const [activeKeyboard, setActiveKeyboard] = useState(false)
+
+
   const toggleActive = () => setActive(!active);
 
   // const closeModal = () => {};
@@ -98,6 +103,32 @@ function VirtualCards() {
       }
   }
 
+  async function createVc(){
+    try {
+      setActiveKeyboard(false)
+      setLoading(true);
+      const url = APIROUTES.createVirtualCard
+      const { res, data } = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          pin: pin.originalPin
+        })
+      });
+      setLoading(false);
+
+      if (!data.success) {
+        notif.error(data.message)
+        return notif.error(data.error);
+      }
+
+      notif.success(data.message)
+      getCards()
+    } catch (e: any) {
+      setLoader((prev: any) => ({ ...prev, changeCardStatus: false }));
+      return notif.error(e.message);
+    }
+  }
+
   return (
     <Layout>
       <div
@@ -117,7 +148,7 @@ function VirtualCards() {
         </div>
         <br />
         <div className="w-full flex items-center justify-between px-5">
-          <button className="px-3 py-2 rounded-[30px] flex items-center justify-center bg-dark-200 text-white-200 ">
+          <button className="px-3 py-2 rounded-[30px] flex items-center justify-center bg-dark-200 text-white-200 " onClick={()=> setActiveKeyboard(!activeKeyboard)}>
             <FaPlus className="text-[12px] " />{" "}
             <span className="text-white-200 text-[15px] ml-3">Create Card</span>
           </button>
@@ -223,6 +254,21 @@ function VirtualCards() {
                 </div>
                 :
             <ErrorScreen text="No Virtual Cards Available" />
+        }
+
+        { loading && <LoaderScreen />  }
+
+        {
+          activeKeyboard &&
+          <Keyboard
+            active={activeKeyboard}
+            title="Create Virtual Card"
+            handler={createVc}
+            toggleKeyboard={()=> {
+              clearPin()
+              setActiveKeyboard(!activeKeyboard)
+            }}
+          />
         }
       </div>
     </Layout>
