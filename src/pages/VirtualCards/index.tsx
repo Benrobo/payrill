@@ -25,7 +25,7 @@ function VirtualCards() {
   const [activeVc, setActiveVc] = useState<any>({});
   const [loading, setLoading] = useState(false)
   const [activeKeyboard, setActiveKeyboard] = useState(false)
-
+  const [vcId, setVcId] = useState("")
 
   const toggleActive = () => setActive(!active);
 
@@ -34,6 +34,11 @@ function VirtualCards() {
   useEffect(() => {
     getCards();
   }, []);
+
+  useEffect(()=>{
+    if(vcId === "") return;
+    getSelectedVc(vcId)
+  },[vcId])
 
   // get virtual cards
   async function getCards() {
@@ -70,6 +75,7 @@ function VirtualCards() {
     navigator.clipboard.writeText(value)
     notif.success("Copied...")
   }
+
 
 
   async function BlockAndUnblockCard(e: any){
@@ -129,6 +135,11 @@ function VirtualCards() {
     }
   }
 
+  function getSelectedVc(id: string){
+    const filter = Data.cards.filter((card: any)=> card.card_id === id)[0];
+    setActiveVc(filter)
+  }
+
   return (
     <Layout>
       <div
@@ -157,6 +168,7 @@ function VirtualCards() {
             id=""
             className="w-auto px-3 py-2 flex items-center justify-center rounded-[30px] bg-dark-200 text-white-200"
             disabled={Error.getCards !== null || Loader.getCards}
+            onChange={(e: any)=> setVcId(e.target.value)}
           >
             <option value="">Select Card</option>
             {
