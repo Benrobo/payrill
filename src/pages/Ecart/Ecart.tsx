@@ -546,7 +546,7 @@ function CheckoutCont({
             className="w-auto px-7 py-3 rounded-[30px] bg-blue-300 font-extrabold text-white-100 transition-all hover:bg-dark-200 scale-[.95] mr-5 "
             onClick={handleCheckout}
           >
-            Checkout & Pay Now
+            Pay Now
           </button>
         </div>
       )}
