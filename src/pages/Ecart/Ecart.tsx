@@ -874,14 +874,14 @@ function CartCard({
           +
         </button>
       </div>
-      <button
+      {(itemData.paid === "false" && itemData.confirmed === "false") && <button
         onClick={deleteEcartItem}
         data-id={data.item_id}
         data-ecart={data.ecart_id}
         className="h-full px-2 py-2 rounded-md bg-red-800 text-white-100 "
       >
         <FaTrashAlt className="text-[12px]" />
-      </button>
+      </button>}
     </div>
   );
 }
