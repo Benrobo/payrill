@@ -6,9 +6,13 @@ import { QrReader } from 'react-qr-reader';
 import DataContext from '../../context/DataContext';
 import APIROUTES from '../../apiRoutes';
 import Fetch from '../../utils/fetch';
-import { LoaderScreenComp } from '../../components/UI-COMP/loader';
+import { LoaderScreen, LoaderScreenComp, Spinner } from '../../components/UI-COMP/loader';
 import { ErrorScreen } from '../../components/UI-COMP/error';
 import { formatCurrency } from '../../utils/creditCard';
+import Notification from '../../utils/toast';
+
+
+const notif= new Notification(10000)
 
 function Verify() {
 
@@ -35,7 +39,7 @@ function Verify() {
   function handleQrcodeResult(result: any, error: any){
     if (!!result) {
       setQrcodeId(result?.text);
-      console.log(result)
+      // console.log(result)
     }
     if (!!error) {
       // console.info(error);
@@ -52,7 +56,6 @@ function Verify() {
 
       setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
       const url = APIROUTES.getCartsItemsForOrg.replace(":cartId", ecartId);
-
       const {res, data} = await Fetch(url, {
         method: "GET",
       });
@@ -63,9 +66,9 @@ function Verify() {
         return
       }
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
-      // setData((prev: any)=>({...prev, ecartItems: data.data.items}))
+      setData((prev: any)=>({...prev, ecartItems: [data.data]}))
       console.log(data)
-      calculateTotalPayment(data.data)
+      calculateTotalPayment(data.data.items)
     } catch (e: any) {
       setLoader((prev: any)=>({...prev, getAllEcartItems: false}))
       setError((prev: any)=>({...prev, getAllEcartItems: `An Error Occured:  ${e.message}`}))
@@ -81,27 +84,63 @@ function Verify() {
     setTotalPayment({amount: totalAmount, currency})
   }
 
+  async function approveEcartPayment(){
+    try {
+      const pin = window.prompt("Enter Pin.")
+
+      if(pin === "") return notif.error("Pin cant be empty")
+      setLoader((prev: any)=>({...prev, approveEcart: true}))
+      const url = APIROUTES.approveCart;
+
+      const {res, data} = await Fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          cartId: Data.ecartItems[0].id,
+          pin
+        })
+      });
+      setLoader((prev: any)=>({...prev, approveEcart: false}))
+
+      if(!data.success){
+        notif.error(data.message)
+        return
+      }
+      
+      notif.success(data.message)
+      setError((prev: any)=>({...prev, aproveEcart: null}))
+    } catch (e: any) {
+      setLoader((prev: any)=>({...prev, approveEcart: false}))
+      setError((prev: any)=>({...prev, aproveEcart: `An Error Occured:  ${e.message}`}))
+    }
+  }
+
+  console.log(Data.ecartItems)
 
   return (
     <OrgLayout sideBarActiveName='verify'>
       <div className="w-full h-screen flex items-start justify-start">
-        <div id="" className="w-full h-screen flex flex-col items-start justify-start px-4 py-3 gap-4">
+        <div id="" className="relative w-full h-screen flex flex-col items-start justify-start px-4 py-3 gap-4">
           <div className="w-full flex flex-col items-start justify-start">
             <p className="text-white-200 font-extrabold">Cart</p>
-            <p className="text-white-300">cart items</p>
+            <p className="text-white-300">cart items :  
+              {qrcodeId !== "" && <span className="text-white-100 ml-2 font-extrabold px-3 py-1 rounded-md bg-blue-300 text-[15px] ">
+                {Data.ecartItems.paid === "true" && Data.ecartItems.confirmed === "false" ? "Paid" : "Unpaid"}
+                {(Data.ecartItems.paid === "true" && Data.ecartItems.confirmed === "true") && "Confirmed"}
+              </span>}
+            </p>
           </div>
           <br />
           <div className="w-full h-[450px] flex flex-col items-start justify-start gap-10 overflow-y-scroll noScrollBar showBar ">
             {
 
-              Loader.getAllEcartItems ? 
+              qrcodeId !== "" && Loader.getAllEcartItems ? 
                 <LoaderScreenComp full={true} />
                 :
-              Error.getAllEcartItems !== null ?
+              qrcodeId !== "" && Error.getAllEcartItems !== null ?
                 <ErrorScreen size='md' full={true} text={Error.getAllEcartItems} />
                 :
-              Data.ecartItems.length > 0 ?  
-                Data.ecartItems.map((data: any, i: number)=>(
+              Data.ecartItems[0]?.items.length > 0 ?  
+                Data.ecartItems[0].items.map((data: any, i: number)=>(
                   <div key={i} className="w-[600px] rounded-md bg-dark-200 flex items-center justify-between p-4">
                     <div className="w-auto flex items-start justify-start gap-5">
                       <div className="w-[50px] h-[50px] bg-dark-200 rounded-md" style={{...cardStyle, backgroundImage: `url(${data.item_image})`}}></div>
@@ -115,7 +154,7 @@ function Verify() {
                     </div>
                   </div>
                 ))
-                :
+              :
               <ErrorScreen size='md' full={true} text={"No items available."} />
             }
           </div>
@@ -130,6 +169,9 @@ function Verify() {
               <p className="text-white-100 text-[25px] font-extrabold"> 0 </p>
             </div>
           }
+
+          {/* Banner */}
+          
         </div>
         <div id="" className="w-[800px] px-4 h-screen  mt-10 ">
           <div className="w-full flex items-start justify-start gap-5">
@@ -159,8 +201,8 @@ function Verify() {
           </div>}
           <br />
           <div className="w-full flex p-5 flex-col items-center justify-center">
-            <button className="w-full px-3 py-4 mt-5 rounded-[30px] bg-green-400 text-center hover:bg-dark-100 hover:text-green-400 font-extrabold text-dark-100 border-[2px] border-solid border-green-400 ">
-              Approve Checkout
+            <button className="w-full flex flex-col items-center justify-center px-3 py-4 mt-5 rounded-[30px] bg-green-400 text-center hover:bg-dark-100 hover:text-green-400 font-extrabold text-dark-100 border-[2px] border-solid border-green-400 " disabled={Loader.approveEcart} onClick={approveEcartPayment}>
+              {Loader.approveEcart ? <Spinner color='#000' /> : "Approve Checkout" }
             </button>
           </div>
         </div>

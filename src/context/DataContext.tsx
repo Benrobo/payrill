@@ -64,7 +64,8 @@ export function DataContextProvider({ children }: any) {
         getAllEcarts: false,
         getAllEcartItems: false,
         deleteEcartItem: false,
-        refundCart: false
+        refundCart: false,
+        approveEcart: false
     })
     const [Error, setError] = useState<any>({
         wallet: null,
@@ -89,7 +90,8 @@ export function DataContextProvider({ children }: any) {
         getAllEcarts: null,
         getAllEcartItems: null,
         deleteEcartItem: null,
-        refundCart: null
+        refundCart: null,
+        approveEcart: null
     })
     // dialog steps
     const [steps, setSteps] = useState<any>({
