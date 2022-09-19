@@ -37,15 +37,22 @@ function Authentication() {
 
   useEffect(() => {
     let store = [];
-    for (const key in countries) {
-      const elem: any = (countries as any)[key];
+    for (const key in supportedCountries.supported_countries) {
+      const elem: any = (supportedCountries.supported_countries as any)[key].name;
+      const code = (supportedCountries.supported_countries as any)[key].country
       let formatedCountry = {
         name: elem,
-        code: key,
+        code,
       };
       store.push(formatedCountry);
     }
-    setCountry(store);
+    setCountry(store.sort((a:any, b:any)=>{
+      let fa = a.name.toLowerCase(),
+      fb = b.name.toLowerCase();
+      if (fa < fb) return -1;
+      if (fa > fb)return 1;
+      return 0;
+    }));
   }, []);
 
   useEffect(() => {
@@ -177,6 +184,7 @@ function Authentication() {
           </div>
           <br />
           <div className="w-full flex items-center justify-between gap-10 ">
+            {/* {console.log(country.sort((a: any, b:any)=> a.code - b.code))} */}
             <select
               name="country"
               id=""

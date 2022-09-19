@@ -2,14 +2,17 @@
     "supported_countries": [
       {
         "country": "GB",
+        "name": "Great Britain",
         "currencies": ["GBP"]
       },
       {
         "country": "DE",
+        "name": "Germany",
         "currencies": ["EUR"]
       },
       {
         "country": "DK",
+        "name": "Denmark",
         "currencies": [
           "AED",
           "AUD",
@@ -37,10 +40,12 @@
       },
       {
         "country": "MX",
+        "name": "Mexico",
         "currencies": ["MXN"]
       },
       {
         "country": "SG",
+        "name": "Singapoure",
         "currencies": ["SGD"]
       }
     ]

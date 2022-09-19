@@ -128,12 +128,12 @@ export default TransactionActivities;
 function TransactionLists({ handleActiveState }: any) {
   const {Data, user, Loader, walletInfo, Error, setData, setLoader, setError} = useContext<any>(DataContext);
 
-  const avatarImg = {
-    background: `url("https://avatars.dicebear.com/api/avataaars/a.svg")`,
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-  };
+  // const avatarImg = {
+  //   background: `url("https://avatars.dicebear.com/api/avataaars/a.svg")`,
+  //   backgroundSize: "cover",
+  //   backgroundRepeat: "no-repeat",
+  //   backgroundPosition: "center",
+  // };
 
   if(Loader.transactions){
     return <LoaderScreenComp full={true} />
@@ -143,16 +143,18 @@ function TransactionLists({ handleActiveState }: any) {
     return <ErrorScreen full={true} text={Error.transactions} />
   }
 
-  function determineIdentity(receiver_id: string, sender_id: string){
+  function determineIdentity(receiver_id: string, sender_id: string, type: string){
     const {id} = user;
-    let _result = {toMe: false, fromMe: false }
+    let _result = {toMe: false, fromMe: false, type: "" }
     if(receiver_id === id && sender_id !== id){
       _result.toMe = true;
       _result.fromMe = false; 
+      _result.type = type
     }
     if(receiver_id !== id && sender_id === id){
       _result.toMe = false,
       _result.fromMe = true;
+      _result.type = type
     }
     return _result;
   }
@@ -183,15 +185,57 @@ function TransactionLists({ handleActiveState }: any) {
                   className="p-6 rounded-[50%] bg-dark-200 border-[3px] border-solid border-blue-200 "
                   style={{...avatarImg, backgroundImage:`url("${tra}")`}}
                 ></div> */}
-                {(determineIdentity(tra.receiver_id, tra.sender_id).toMe && !determineIdentity(tra.receiver_id, tra.sender_id).fromMe) &&
-                  <BiArrowFromTop className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />}
-                  
-                {(!determineIdentity(tra.receiver_id, tra.sender_id).toMe && determineIdentity(tra.receiver_id, tra.sender_id).fromMe) &&
-                  <BiArrowFromBottom className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />}
+                {
+                  (
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe 
+                    &&
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).type === "deposit"
+                    && 
+                  !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe
+                  )
+                  &&
+                  <BiArrowFromTop className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />
+                }
+
+                {
+                  (
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe 
+                    &&
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).type === "crypto"
+                    && 
+                    !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe
+                  )
+                  &&
+                  <BiArrowFromBottom className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />
+                }
+
+                {
+                  (
+                    !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe 
+                    &&
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).type === "transfer"
+                    && 
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe
+                  )
+                  &&
+                  <BiArrowFromBottom className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />
+                }
+
+                {
+                  (
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe 
+                    &&
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).type === "transfer"
+                    && 
+                    !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe
+                  )
+                  &&
+                  <BiArrowFromBottom className=" p-2 text-white-300 text-[45px] bg-dark-100 rounded-[50%] "  />
+                }
 
                 <div className="w-auto flex flex-col items-start justify-start">
                   <span className="text-white-200 text-[15px] capitalize font-extrabold ">
-                    {tra.type}
+                    {tra.title}
                   </span>
                   <span className="text-white-300 text-[12px]">
                     {moment(tra.createdAt).format("MMM Do YY h:mm a")}
@@ -202,12 +246,12 @@ function TransactionLists({ handleActiveState }: any) {
                 id="right"
                 className="w-auto flex flex-col items-center justify-center"
               >
-                <span className={`w-[90px] ${determineIdentity(tra.receiver_id, tra.sender_id).toMe && !determineIdentity(tra.receiver_id, tra.sender_id).fromMe ? "text-green-400" : !determineIdentity(tra.receiver_id, tra.sender_id).toMe && determineIdentity(tra.receiver_id, tra.sender_id).fromMe ? "text-red-200" : "" } text-[15px] font-extrabold `}>
+                <span className={`w-[90px] ${determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe && !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe ? "text-green-400" : !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe && determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe ? "text-red-200" : "" } text-[15px] font-extrabold `}>
                   {
-                    determineIdentity(tra.receiver_id, tra.sender_id).toMe && !determineIdentity(tra.receiver_id, tra.sender_id).fromMe ?
+                    determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe && !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe ?
                     "+"+formatCurrency(tra.currency, tra.amount)
                     :
-                    !determineIdentity(tra.receiver_id, tra.sender_id).toMe && determineIdentity(tra.receiver_id, tra.sender_id).fromMe ?
+                    !determineIdentity(tra.receiver_id, tra.sender_id, tra.type).toMe && determineIdentity(tra.receiver_id, tra.sender_id, tra.type).fromMe ?
                     "-"+formatCurrency(tra.currency, tra.amount)
                     :
                     ""
@@ -254,12 +298,12 @@ function ViewTransaction({ active, transactionId, setActiveState, handleActiveSt
   function filterTransaction(){
     const filtered = Data.transactions.filter((data: any)=> data.id === transactionId)[0]
     setSelectedData((prev: any)=>({...prev, transactions: filtered}))
-    filterUser(filtered.sender_id, filtered.receiver_id)
+    filterUser(filtered.sender_id, filtered.receiver_id, filtered.type)
   }
 
-  function filterUser(sId: string, rId: string){
+  function filterUser(sId: string, rId: string, type: string){
     const {id} = user;
-    let _result = {toMe: false, fromMe: false, sName: "", rName: "",sUname: "", rUname: "" }
+    let _result = {toMe: false, fromMe: false, sName: "", rName: "",sUname: "", rUname: "", type: "" }
     const localUsers = JSON.parse(localStorage.getItem("payrill-users") as any)
     if(rId === id && sId !== id){
       _result.toMe = true;
@@ -268,6 +312,7 @@ function ViewTransaction({ active, transactionId, setActiveState, handleActiveSt
       _result.rName = localUsers.filter((user:any)=> user.id === rId)[0]?.name;
       _result.sUname = localUsers.filter((user:any)=> user.id === sId)[0]?.username;
       _result.rUname = localUsers.filter((user:any)=> user.id === rId)[0]?.username;
+      _result.type = type
     }
 
     if(rId !== id && sId === id){
@@ -277,6 +322,7 @@ function ViewTransaction({ active, transactionId, setActiveState, handleActiveSt
       _result.rName = Data.users.filter((user:any)=> user.id === rId)[0]?.name;
       _result.sUname = Data.users.filter((user:any)=> user.id === sId)[0]?.username;
       _result.rUname = Data.users.filter((user:any)=> user.id === rId)[0]?.username;
+      _result.type = type
     }
 
     setSelectedData((prev: any)=>({...prev, user: _result}))
@@ -329,12 +375,15 @@ function ViewTransaction({ active, transactionId, setActiveState, handleActiveSt
           </p>
           <p className="text-white-100 ">
             You  
-            {selectedData.user.fromMe && " sent " } 
-            {selectedData.user.toMe && " received "}
+            {(selectedData.user.fromMe && selectedData.user.type === "transfer")  && " sent " } 
+            {(selectedData.user.toMe && selectedData.user.type === "transfer") && " received "}
+            {(selectedData.user.toMe && selectedData.user.type === "deposit") && " deposited "}
+            {(selectedData.user.toMe && selectedData.user.type === "crypto") && " purchased "}
 
             <span className="font-extrabold">{formatCurrency(selectedData.transactions.currency, selectedData.transactions.amount)}</span> 
-            {selectedData.user.fromMe && " to " } 
-            {selectedData.user.toMe && " from "}
+            {(selectedData.user.fromMe && selectedData.user.type === "transfer") && " to " } 
+            {(selectedData.user.toMe && selectedData.user.type === "transfer") && " from "}
+            {(selectedData.user.toMe && selectedData.user.type === "crypto") && " crypto "}
 
             <span className="font-extrabold"> 
               {selectedData.user.fromMe && selectedData.user.rUname}
