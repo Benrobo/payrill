@@ -53,7 +53,6 @@ function Verify() {
 
   async function getItemById(ecartId: string){
     try {
-
       setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
       const url = APIROUTES.getCartsItemsForOrg.replace(":cartId", ecartId);
       const {res, data} = await Fetch(url, {
@@ -114,7 +113,7 @@ function Verify() {
     }
   }
 
-  console.log(Data.ecartItems)
+  // console.log(Data.ecartItems)
 
   return (
     <OrgLayout sideBarActiveName='verify'>
@@ -124,8 +123,8 @@ function Verify() {
             <p className="text-white-200 font-extrabold">Cart</p>
             <p className="text-white-300">cart items :  
               {qrcodeId !== "" && <span className="text-white-100 ml-2 font-extrabold px-3 py-1 rounded-md bg-blue-300 text-[15px] ">
-                {Data.ecartItems[0].paid === "true" && Data.ecartItems[0].confirmed === "false" ? "Paid" : "Unpaid"}
-                {(Data.ecartItems[0].paid === "true" && Data.ecartItems[0].confirmed === "true") && "Confirmed"}
+                {Data.ecartItems[0]?.paid === "true" && Data.ecartItems[0]?.confirmed === "false" ? "Paid" : "Unpaid"}
+                {(Data.ecartItems[0]?.paid === "true" && Data.ecartItems[0]?.confirmed === "true") && "Confirmed"}
               </span>}
             </p>
           </div>
