@@ -401,21 +401,6 @@ function CheckoutCont({
             <FaLongArrowAltLeft className="text-[20px] text-white-100 " />
           </button>
         </Link>
-        <p className="text-white-100 text-[18px] ml-5 font-extrabold ">
-          Checkout
-          {Object.entries(selectedEcart).length > 0 && (
-            <span className="absolute left-[15px] bottom-[-30px] text-[12px] px-3 py-1 rounded-md bg-blue-300 text-white-100">
-              {/* { selectedEcart?.paid === "false" ? "unpaid" : selectedEcart.paid === "true" && selectedEcart.paid === "false" ? "uncomfirmed" : "" } */}
-              {selectedEcart?.paid === "false"
-                ? "unpaid"
-                : selectedEcart.paid === "true"
-                ? "uncomfirmed"
-                : selectedEcart.confirmed === "true"
-                ? "Paid"
-                : ""}
-            </span>
-          )}
-        </p>
         <select
           name=""
           id=""
