@@ -61,7 +61,7 @@ function Products() {
 
   async function getAllItems(){
     try {
-
+      const storeId = localStorage.getItem("payrill_store_id") === null ? "" : JSON.parse(localStorage.getItem("payrill_store_id") as any)
       setLoader((prev: any)=>({...prev, getStoreItems: true}))
       const url = APIROUTES.getStoreItems
 
