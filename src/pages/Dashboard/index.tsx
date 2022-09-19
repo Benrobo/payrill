@@ -284,7 +284,7 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
         </div>
         <div
           id="virtualCards"
-          className="w-full h-[200px] overflow-y-scroll noScrollBar flex flex-col items-start justify-start gap-2"
+          className="w-full h-auto max-h-[200px] overflow-y-scroll noScrollBar flex flex-col items-start justify-start gap-2"
         >
           {
             Loader.getCards ? 
