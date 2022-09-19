@@ -53,11 +53,12 @@ function Ecart() {
   const [activeKeyboard, setActiveKeyboard] = useState(false);
   const [productInfo, setProducInfo] = useState<any>({});
   const [ecartInfo, setEcartInfo] = useState({});
+  const [currency, setCurrency] = useState("")
 
   const toggleActiveAlertBox = () => setActiveAlertBox(!activeAlertBox);
   const toggleActiveKeyboard = () => {
     setActiveKeyboard(!activeKeyboard);
-    if (steps === 2) toggleSteps(1);
+    if (steps === 3) toggleSteps(1);
   };
   const [paymentData, setPaymentData] = useState({});
   const toggleSteps = (step: number) => setSteps(step);
@@ -68,6 +69,7 @@ function Ecart() {
     const payload = {
       ecartId: Data.ecartItems[0].ecart_id,
       pin: pin.originalPin,
+      currency
     };
     try {
       setLoader((prev: any) => ({ ...prev, payForCart: true }));
@@ -115,14 +117,25 @@ function Ecart() {
       >
         {steps === 1 ? (
           <CheckoutCont
+          toggleStep={toggleSteps}
+          toggleKeyboard={toggleActiveKeyboard}
+          toggleAtiveAlertBox={toggleActiveAlertBox}
+          setActiveAlertMsg={setActiveAlertMsg}
+          setEcartInfo={setEcartInfo}
+          setPaymentTrackingId={setPaymentTrackingId}
+          />
+          ) 
+        :
+        steps === 2 ?
+          
+          <SelectCurrency 
             toggleStep={toggleSteps}
             toggleKeyboard={toggleActiveKeyboard}
-            toggleAtiveAlertBox={toggleActiveAlertBox}
-            setActiveAlertMsg={setActiveAlertMsg}
-            setEcartInfo={setEcartInfo}
-            setPaymentTrackingId={setPaymentTrackingId}
-          />
-        ) : steps === 2 ? (
+            setCurrency={setCurrency}
+            currency={currency}
+          />  
+        :
+        steps === 3 ? (
           <Keyboard
             active={activeKeyboard}
             title="Checkout Payment"
@@ -153,6 +166,70 @@ function Ecart() {
 }
 
 export default Ecart;
+
+function SelectCurrency({toggleStep, currency, setCurrency }: any){
+  
+  const {walletInfo, Loader, Error} = useContext<any>(DataContext)
+  const [balance, setBalance] = useState(0);
+
+
+  useEffect(()=>{
+    if(currency === "") return;
+    getWalletBalance(currency)
+  },[currency])
+
+  function getWalletBalance(currency: string){
+    if(Object.entries(walletInfo).length === 0) return
+    let filterCurr;
+    if(typeof currency === "undefined" || currency === ""){
+      filterCurr = walletInfo.accounts[0];
+      setCurrency(filterCurr.currency)
+      setBalance(filterCurr.balance)
+      return;
+    }
+    filterCurr = walletInfo.accounts.filter((curr: any)=> curr.currency === currency)[0]
+    setCurrency(filterCurr.currency)
+    setBalance(filterCurr.balance)
+  }
+
+
+  return (
+    <Modal isActive={true} clickHandler={()=>toggleStep()}>
+      <Dialog height={300}>
+        <div className="w-full px-4">
+          <br />
+          <div id="head" className="w-full flex flex-col items-center justify-center mt-1">
+            <p className="text-white-300">PayRill Balance : <span className="text-white-100 font-extrabold"> { currency === "" ? "" : formatCurrency(currency, balance)} </span> </p>
+          </div>
+          <br />
+          <select name="" id="" onChange={(e: any)=> setCurrency(e.target.value)} className="w-full px-4 py-3 bg-dark-100 text-white-100 rounded-[30px]">
+            <option value="">Select Currency Account</option>
+            {
+              Loader.wallet ? 
+                  <option value="">Loading...</option>
+                  :
+              Error.wallet ?
+                  <option value="">{Error.wallet}</option>
+                  :
+              walletInfo.accounts.map((act: any)=>(
+                  <option value={act.currency} key={act.id}>{act.currency}</option>
+              ))
+            }
+          </select>
+          <br />
+          <br />
+          <button className="w-full flex flex-col rounded-[30px] px-4 py-3 items-center justify-center bg-blue-300 transition-all scale-[1] hover:scale-[.95] text-white-100 font-extrabold " onClick={()=>{
+            if(currency === "") return notif.error("select currency account.")
+            toggleStep(3)
+          }}>
+              Continue
+          </button>
+          <br />
+        </div>
+      </Dialog>
+    </Modal>
+  )
+}
 
 function CheckoutCont({
   toggleStep,
@@ -276,7 +353,6 @@ function CheckoutCont({
       }
 
       setData((prev: any) => ({ ...prev, ecartItems: data.data.items }));
-      console.log(data);
       setPaymentTrackingId(data.data.id);
       setError((prev: any) => ({ ...prev, getAllEcartItems: null }));
       calculateTotalPayment(data.data.items);
@@ -404,7 +480,7 @@ function CheckoutCont({
         <select
           name=""
           id=""
-          className="absolute top-4 right-5 px-4 py-3 text-[12px] rounded-[30px] bg-dark-200 text-white-100"
+          className="absolute top-2 right-5 px-4 py-3 text-[12px] rounded-[30px] bg-dark-200 text-white-100"
           onChange={(e: any) => {
             const value = e.target.value;
             if (value === "") return;
@@ -426,7 +502,7 @@ function CheckoutCont({
         </select>
         <button
           onClick={toggleShareCart}
-          className="absolute top-6 right-[200px] px-3 py-2 rounded-md text-[12px] font-extrabold bg-blue-300"
+          className="absolute top-3 right-[200px] px-3 py-2 rounded-md text-[12px] font-extrabold bg-blue-300"
         >
           <FaShareAlt className="text-[15px] text-white-100 " />
         </button>
@@ -815,6 +891,8 @@ function CartCard({
     updateItemQuantity(newQty);
   };
 
+  const ecartData = Data.ecarts.filter((cart: any)=> cart.id === data.ecart_id)[0]
+
   return (
     <div
       className="w-full h-[90px] bg-dark-200 rounded-md p-4 flex items-center justify-between gap-5 "
@@ -859,7 +937,8 @@ function CartCard({
           +
         </button>
       </div>
-      {(itemData.paid === "false" && itemData.confirmed === "false") && <button
+
+      {(ecartData.paid === "false" && ecartData.confirmed === "false") && <button
         onClick={deleteEcartItem}
         data-id={data.item_id}
         data-ecart={data.ecart_id}
