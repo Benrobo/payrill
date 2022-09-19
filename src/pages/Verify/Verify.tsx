@@ -124,8 +124,8 @@ function Verify() {
             <p className="text-white-200 font-extrabold">Cart</p>
             <p className="text-white-300">cart items :  
               {qrcodeId !== "" && <span className="text-white-100 ml-2 font-extrabold px-3 py-1 rounded-md bg-blue-300 text-[15px] ">
-                {Data.ecartItems.paid === "true" && Data.ecartItems.confirmed === "false" ? "Paid" : "Unpaid"}
-                {(Data.ecartItems.paid === "true" && Data.ecartItems.confirmed === "true") && "Confirmed"}
+                {Data.ecartItems[0].paid === "true" && Data.ecartItems[0].confirmed === "false" ? "Paid" : "Unpaid"}
+                {(Data.ecartItems[0].paid === "true" && Data.ecartItems[0].confirmed === "true") && "Confirmed"}
               </span>}
             </p>
           </div>
