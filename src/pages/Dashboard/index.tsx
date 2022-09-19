@@ -27,7 +27,7 @@ import APIROUTES from "../../apiRoutes";
 import Fetch from "../../utils/fetch";
 import Notification from "../../utils/toast";
 import { ErrorScreen } from "../../components/UI-COMP/error";
-import { GetCardType } from "../../utils/creditCard";
+import { formatCardNUm, GetCardType } from "../../utils/creditCard";
 
 interface ActiveState {
   viewTransaction: boolean;
@@ -280,10 +280,11 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
           >
             <p className="text-white-100 text-[15px] ">E-Wallet</p>
           </div>
+          <div className="w-full h-[20px] "></div>
         </div>
         <div
           id="virtualCards"
-          className="w-full flex flex-col items-start justify-start gap-2"
+          className="w-full h-[200px] overflow-y-scroll noScrollBar flex flex-col items-start justify-start gap-2"
         >
           {
             Loader.getCards ? 
@@ -303,14 +304,14 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
               Data.cards.map((data: any)=>(
                 <div
                   id="card"
-                  className={`w-full rounded-md flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer mt-1 border-[3px] ${activetarget.name === "virtualCard" ? "border-blue-300 bg-blue-300" : "border-transparent bg-dark-100 "} border-solid hover:bg-blue-300`}
+                  className={`w-full rounded-md flex flex-row items-center justify-start px-4 py-3 gap-3 cursor-pointer mt-1 border-[3px] ${(activetarget.name === "virtualCard" && activetarget.cardId === data.card_id ) ? "border-blue-300 bg-blue-300" : "border-transparent bg-dark-100 "} border-solid hover:bg-blue-300`}
                   onClick={handleActiveTarget}
                   data-name="virtualCard"
                   data-id={data.card_id}
                   data-type="virtual_card"
                 >
                   <p className="text-white-100 text-[15px] capitalize ">
-                    {GetCardType(data.card_number)}
+                    {GetCardType(data.card_number)} <span className="ml-2 text-white-200">{formatCardNUm(data.card_number)}</span>
                   </p>
                 </div>
               ))
@@ -319,6 +320,7 @@ function SwitchedCard({ handleActiveState, active, isActive }: any) {
                 <span className="text-white-200 text-[12px] py-2 ">No virtual cards available</span>
               </div>
           }
+          <div className="w-full h-[20px] "></div>
         </div>
         <br />
         <div className="w-full flex flex-row items-center justify-between">
