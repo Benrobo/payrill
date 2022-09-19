@@ -709,7 +709,7 @@ function AlertContainer({
   return (
     <Modal isActive={active} clickHandler={handleCloseModal}>
       <div className="w-full h-screen flex flex-col items-center justify-center">
-        <div className="w-[450px] h-auto bg-dark-200 rounded-md ">
+        <div className="w-[450px] scale-[.75] md:scale-[.90] h-auto bg-dark-200 rounded-md ">
           <div className="w-full flex flex-col text-center items-center justify-center">
             <div className="w-full px-3 py-3">
               <p className="text-green-200 text-[20px] font-extrabold">

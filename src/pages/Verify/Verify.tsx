@@ -51,7 +51,7 @@ function Verify() {
     try {
 
       setLoader((prev: any)=>({...prev, getAllEcartItems: true}))
-      const url = APIROUTES.getCartsItems.replace(":cartId", ecartId);
+      const url = APIROUTES.getCartsItemsForOrg.replace(":cartId", ecartId);
 
       const {res, data} = await Fetch(url, {
         method: "GET",
@@ -63,7 +63,7 @@ function Verify() {
         return
       }
       setError((prev: any)=>({...prev, getAllEcartItems: null}))
-      // setData((prev: any)=>({...prev, ecartItems: data.data}))
+      // setData((prev: any)=>({...prev, ecartItems: data.data.items}))
       console.log(data)
       calculateTotalPayment(data.data)
     } catch (e: any) {
@@ -101,7 +101,7 @@ function Verify() {
                 <ErrorScreen size='md' full={true} text={Error.getAllEcartItems} />
                 :
               Data.ecartItems.length > 0 ?  
-                Data.ecartItems.filter((item: any)=> item.paid === "true" && item.confirmed === "false").map((data: any, i: number)=>(
+                Data.ecartItems.map((data: any, i: number)=>(
                   <div key={i} className="w-[600px] rounded-md bg-dark-200 flex items-center justify-between p-4">
                     <div className="w-auto flex items-start justify-start gap-5">
                       <div className="w-[50px] h-[50px] bg-dark-200 rounded-md" style={{...cardStyle, backgroundImage: `url(${data.item_image})`}}></div>
