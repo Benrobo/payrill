@@ -138,7 +138,7 @@ function Transfer() {
             if(validator.isEmail(value)) setSearchValue(value)
 
             let newVal = value.replace("@", "")
-            filteredData = storageUserData.filter((data: any)=> data.username.includes(newVal))
+            filteredData = storageUserData.filter((data: any)=> data.username.toLowerCase().includes(newVal))
             return setData((prev: any)=> ({...prev, ["users"]: filteredData}))
         }
         
