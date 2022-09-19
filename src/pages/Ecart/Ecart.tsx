@@ -836,7 +836,7 @@ function CartCard({
       key={key}
     >
       <div
-        className="w-[50px] rounded-md relative  h-[50px] bg-white-100 "
+        className="w-[50px] max-w-[50px] rounded-md relative  h-[50px] bg-white-100 "
         style={{ ...productStyle }}
       ></div>
       <div className="w-auto flex flex-col items-start justify-start">
